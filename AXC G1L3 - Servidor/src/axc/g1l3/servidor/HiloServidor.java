@@ -30,9 +30,11 @@ public class HiloServidor extends Thread
     DatagramSocket UDP;
     int idAsignada;
     InetAddress direccion;
+    boolean almacenado;
 
     public HiloServidor(Socket socket, Servidor server)
     {
+        almacenado=false;
         this.TCP = socket;
         direccion = TCP.getLocalAddress();
         this.server = server;
@@ -67,7 +69,12 @@ public class HiloServidor extends Thread
                 UDP.setSoTimeout(20000);
 
                 UDP.receive(PaqueteRecibido);
-
+                if(!almacenado)
+                {
+                    server.addUDPdata(idAsignada, direccion,PaqueteRecibido);
+                    almacenado=true;
+                }
+                
                 mensaje = new String(mensajeEnBytes).trim();
                 if (mensaje != null) {
                     distribuirCoordenadas(idAsignada, PaqueteRecibido);
@@ -121,7 +128,7 @@ public class HiloServidor extends Thread
 
     private int GetPorCliente(int IDsala, int indice)
     {
-        return server.GetPorCliente(IDsala, indice);
+        return server.GetPorClienteUDP(IDsala, indice);
     }
 
 }

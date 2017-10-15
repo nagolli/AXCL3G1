@@ -8,6 +8,7 @@ package axc.g1l3.servidor;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -32,7 +33,8 @@ public class Servidor
     String grupos;
     Ventana vista;
     static final int PORT = 1993;
-    ArrayList< ArrayList< ArrayList<Socket>>> lista; //Grupo/Sala/Socket
+    ArrayList< ArrayList< ArrayList<Socket>>> listaTCP; //Grupo/Sala/Socket
+    ArrayList< ArrayList< ArrayList<DatagramPacket> >> listaUDP; //Grupo/Sala/Socket
     ArrayList< ArrayList<Integer>> idSalas; //Grupo/IdSala
 
     /*
@@ -49,16 +51,18 @@ public class Servidor
         Scanner fileIn = new Scanner(new File("grupos.txt"));
         grupos = fileIn.nextLine();
         System.out.println(grupos);
-        lista = new ArrayList();
+        listaTCP = new ArrayList();
+        listaUDP = new ArrayList();
         idSalas = new ArrayList();
         for (int i = 0; i < grupos.length(); i++) {
             if (grupos.charAt(i) == '/') {
-                lista.add(new ArrayList());
-                lista.get(lista.size() - 1).add(new ArrayList());
+                listaTCP.add(new ArrayList());
+                listaUDP.add(new ArrayList());
+                listaTCP.get(listaTCP.size() - 1).add(new ArrayList());
+                listaUDP.get(listaUDP.size() - 1).add(new ArrayList());
                 idSalas.add(new ArrayList());
             }
         }
-        lista.add(new ArrayList());
         idSalas.add(new ArrayList());
 
     }
@@ -122,10 +126,10 @@ public class Servidor
      */
     public void apagar() throws IOException
     {
-        for (int i = 0; i < lista.size(); i++) {
-            for (int j = 0; j < lista.get(i).size(); j++) {
-                for (int k = 0; k < lista.get(i).get(j).size(); k++) {
-                    lista.get(i).get(j).get(k).close();
+        for (int i = 0; i < listaTCP.size(); i++) {
+            for (int j = 0; j < listaTCP.get(i).size(); j++) {
+                for (int k = 0; k < listaTCP.get(i).get(j).size(); k++) {
+                    listaTCP.get(i).get(j).get(k).close();
                 }
             }
         }
@@ -135,11 +139,11 @@ public class Servidor
     Funcion que obtiene el puerto de un cliente previamente conectado
     Se llama desde HiloServidor, distribuir coordenadas
      */
-    public int GetPorCliente(int IDsala, int indice)
+    public int GetPorClienteUDP(int IDsala, int indice)
     {
-        for (int i = 0; i < lista.size(); i++) {
-            for (int j = 0; j < lista.get(i).size(); j++) {
-                return lista.get(i).get(j).get(indice).getPort();
+        for (int i = 0; i < listaUDP.size(); i++) {
+            for (int j = 0; j < listaUDP.get(i).size(); j++) {
+                return listaUDP.get(i).get(j).get(indice).getPort();
             }
         }
         return 0;
@@ -151,9 +155,9 @@ public class Servidor
      */
     public InetAddress GetDirCliente(int IDsala, int indice)
     {
-        for (int i = 0; i < lista.size(); i++) {
-            for (int j = 0; j < lista.get(i).size(); j++) {
-                return lista.get(i).get(j).get(indice).getLocalAddress();
+        for (int i = 0; i < listaTCP.size(); i++) {
+            for (int j = 0; j < listaTCP.get(i).size(); j++) {
+                return listaTCP.get(i).get(j).get(indice).getLocalAddress();
             }
         }
         return null;
@@ -168,7 +172,7 @@ public class Servidor
         for (int i = 0; i < idSalas.size(); i++) {
             for (int j = 0; j < idSalas.get(i).size(); j++) {
                 if (idSalas.get(i).get(j) == IDsala) {
-                    return idSalas.get(i).get(j);
+                    return listaTCP.get(i).get(j).size();
                 }
             }
         }
@@ -185,24 +189,45 @@ public class Servidor
         /*
         Si hay espacio pondrá el socket en una sala existente
          */
-        for (int i = 0; i < lista.get(intSala).size(); i++) {
-            aux = lista.get(intSala).get(i).size();
+        for (int i = 0; i < listaTCP.get(intSala).size(); i++) {
+            aux = listaTCP.get(intSala).get(i).size();
             if (aux < maxClientes) {
-                lista.get(intSala).get(i).add(TCP);
+                listaTCP.get(intSala).get(i).add(TCP);
             }
             return idSalas.get(intSala).get(i);
         }
         /*
         Si no hay espacio creará una nueva sala y añadirá el socket
          */
-        lista.get(intSala).add(new ArrayList());
+        listaTCP.get(intSala).add(new ArrayList());
+        listaUDP.get(intSala).add(new ArrayList());
         idSalas.get(intSala).add(salas + 1);
         salas++;
         vista.SetSalas(salas);
-        lista.get(intSala).get(lista.get(intSala).size() - 1).add(TCP);
+        listaTCP.get(intSala).get(listaTCP.get(intSala).size() - 1).add(TCP);
+        listaUDP.get(intSala).get(listaUDP.get(intSala).size() - 1).add(null);
         return salas;
     }
 
+    /*
+    
+    */
+    public void addUDPdata(int idAsignada, InetAddress dir,DatagramPacket data)
+    {
+        for (int i = 0; i < idSalas.size(); i++) {
+            for (int j = 0; j < idSalas.get(i).size(); j++) {
+                if (idSalas.get(i).get(j) == idAsignada) {
+                    for (int k = 0; k < listaTCP.get(i).get(j).size(); k++) {
+                        if (listaTCP.get(i).get(j).get(k).getLocalAddress() == dir) {
+                            listaUDP.get(i).get(j).set(k,data);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     /*
     Funcion que en caso de que el cliente cierre la conexión lo elimina de la estructura
     Se llama desde HiloServidor en el Run
@@ -212,9 +237,10 @@ public class Servidor
         for (int i = 0; i < idSalas.size(); i++) {
             for (int j = 0; j < idSalas.get(i).size(); j++) {
                 if (idSalas.get(i).get(j) == idAsignada) {
-                    for (int k = 0; k < lista.get(i).get(j).size(); k++) {
-                        if (lista.get(i).get(j).get(k).getLocalAddress() == dir) {
-                            lista.get(i).get(j).remove(k);
+                    for (int k = 0; k < listaTCP.get(i).get(j).size(); k++) {
+                        if (listaTCP.get(i).get(j).get(k).getLocalAddress() == dir) {
+                            listaTCP.get(i).get(j).remove(k);
+                            listaUDP.get(i).get(j).remove(k);
                             return;
                         }
                     }
