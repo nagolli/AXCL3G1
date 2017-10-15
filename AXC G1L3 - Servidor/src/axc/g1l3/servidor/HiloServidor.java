@@ -102,12 +102,16 @@ public class HiloServidor extends Thread
     {
         byte[] mensajeEnBytes;
         DatagramPacket paqueteEnviado;
-
+        int portDest;
         try {
             for (int i = 0; i < GetClientesSala(IDsala); i++) {
                 mensajeEnBytes = paqueteRecibido.getData();
-                paqueteEnviado = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, GetDirCliente(IDsala, i), GetPorCliente(IDsala, i)); // Envía
+                portDest=GetPorCliente(IDsala, i);
+                if(portDest>0)
+                {
+                paqueteEnviado = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, GetDirCliente(IDsala, i),portDest); // Envía
                 UDP.send(paqueteEnviado);
+                }
             }
         } catch (IOException e) {
             System.err.println(e.getMessage());

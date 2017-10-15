@@ -143,7 +143,9 @@ public class Servidor
     {
         for (int i = 0; i < listaUDP.size(); i++) {
             for (int j = 0; j < listaUDP.get(i).size(); j++) {
+                try{
                 return listaUDP.get(i).get(j).get(indice).getPort();
+                }catch(Exception e){}
             }
         }
         return 0;
