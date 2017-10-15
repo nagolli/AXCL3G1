@@ -7,6 +7,10 @@ package axc.g1l3.servidor;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -20,13 +24,15 @@ public class Ventana extends javax.swing.JFrame
     /**
      * Creates new form Ventana
      */
-    public Ventana(int max)
+    public Ventana(int max) throws FileNotFoundException
     {
         initComponents();
-        servidor=new Servidor(max);
         TextMaximo.setText(String.valueOf(max));
         TextClientes.setText("0");
         TextSalas.setText("0");
+        this.setVisible(true);
+        servidor=new Servidor(max,this);    //Creación del objeto
+        servidor.encender();                //Puesta en marcha, bucle infinito
     }
 
     public void SetClientes(int clientes)
@@ -112,6 +118,11 @@ public class Ventana extends javax.swing.JFrame
 
     private void BotonSalirActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_BotonSalirActionPerformed
     {//GEN-HEADEREND:event_BotonSalirActionPerformed
+        try {
+            servidor.apagar();
+        } catch (IOException ex) {
+            Logger.getLogger(Ventana.class.getName()).log(Level.SEVERE, null, ex);
+        }
         System.exit(0);
     }//GEN-LAST:event_BotonSalirActionPerformed
 
@@ -148,7 +159,11 @@ public class Ventana extends javax.swing.JFrame
         {
             public void run()
             {
-                new Ventana(max).setVisible(true);
+                try {
+                    new Ventana(max).setVisible(true);
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(Ventana.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
     }

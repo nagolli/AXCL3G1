@@ -5,6 +5,8 @@
  */
 package axc.g1l3.servidor;
 
+import java.io.FileNotFoundException;
+
 /**
  *
  * @author Ignacio
@@ -15,10 +17,9 @@ public class AXCG1L3Servidor
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args)
+    public static void main(String[] args) throws FileNotFoundException
     {
-        Ventana ventanaInicial=new Ventana(50);
-        ventanaInicial.setVisible(true);
+        Ventana ventanaInicial=new Ventana(50); //Argumento: Maximo clientes en una sala
     }
     
 }
