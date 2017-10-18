@@ -47,6 +47,7 @@ public class Servidor
         salas = 0;
         maxClientes = max;
         this.vista = vista;
+        HiloServidor.setContador(1);
 
         Scanner fileIn = new Scanner(new File("grupos.txt"));
         grupos = fileIn.nextLine();
@@ -130,6 +131,8 @@ public class Servidor
             for (int j = 0; j < listaTCP.get(i).size(); j++) {
                 for (int k = 0; k < listaTCP.get(i).get(j).size(); k++) {
                     listaTCP.get(i).get(j).get(k).close();
+                    clientes--;
+                    vista.SetClientes(clientes);
                 }
             }
         }
@@ -243,6 +246,8 @@ public class Servidor
                         if (listaTCP.get(i).get(j).get(k).getLocalAddress() == dir) {
                             listaTCP.get(i).get(j).remove(k);
                             listaUDP.get(i).get(j).remove(k);
+                            clientes--;
+                            vista.SetClientes(clientes);
                             return;
                         }
                     }

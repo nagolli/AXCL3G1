@@ -31,13 +31,22 @@ public class HiloServidor extends Thread
     int idAsignada;
     InetAddress direccion;
     boolean almacenado;
+    static int contador;
+    int id;                     //Aun no se usa, pero podría ser necesario
+
+    public static void setContador(int contador)
+    {
+        HiloServidor.contador = contador;
+    }
 
     public HiloServidor(Socket socket, Servidor server)
     {
-        almacenado=false;
+        almacenado = false;
         this.TCP = socket;
         direccion = TCP.getLocalAddress();
         this.server = server;
+        id = contador;
+        HiloServidor.contador = id + 1;
     }
 
     /*
@@ -69,12 +78,11 @@ public class HiloServidor extends Thread
                 UDP.setSoTimeout(20000);
 
                 UDP.receive(PaqueteRecibido);
-                if(!almacenado)
-                {
-                    server.addUDPdata(idAsignada, direccion,PaqueteRecibido);
-                    almacenado=true;
+                if (!almacenado) {
+                    server.addUDPdata(idAsignada, direccion, PaqueteRecibido);
+                    almacenado = true;
                 }
-                
+
                 mensaje = new String(mensajeEnBytes).trim();
                 if (mensaje != null) {
                     distribuirCoordenadas(idAsignada, PaqueteRecibido);
@@ -103,14 +111,17 @@ public class HiloServidor extends Thread
         byte[] mensajeEnBytes;
         DatagramPacket paqueteEnviado;
         int portDest;
+        InetAddress address;
         try {
             for (int i = 0; i < GetClientesSala(IDsala); i++) {
                 mensajeEnBytes = paqueteRecibido.getData();
-                portDest=GetPorCliente(IDsala, i);
-                if(portDest>0)
-                {
-                paqueteEnviado = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, GetDirCliente(IDsala, i),portDest); // Envía
-                UDP.send(paqueteEnviado);
+                portDest = GetPorCliente(IDsala, i);
+                if (portDest > 0) {
+                    address = GetDirCliente(IDsala, i);
+                    if (address != null) {
+                        paqueteEnviado = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, address, portDest); // Envía
+                        UDP.send(paqueteEnviado);
+                    }
                 }
             }
         } catch (IOException e) {
