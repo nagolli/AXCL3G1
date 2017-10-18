@@ -6,6 +6,8 @@
 package axc.g1l3.servidor;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -32,7 +34,7 @@ public class HiloServidor extends Thread
     InetAddress direccion;
     boolean almacenado;
     static int contador;
-    int id;                     //Aun no se usa, pero podría ser necesario
+    int id;
 
     public static void setContador(int contador)
     {
@@ -60,16 +62,18 @@ public class HiloServidor extends Thread
             PrintWriter out = new PrintWriter(outstream);
             out.print(server.getGrupos());
 
-            /* Espera hasta recibir int de sala*/
+            /* Espera hasta recibir int de sala como string*/
             BufferedReader inFromClient = new BufferedReader(new InputStreamReader(TCP.getInputStream()));
             String line = "";
-            while ((line = inFromClient.readLine()) != null) {
-            }
+            while ((line = inFromClient.readLine()) != null) {}
             int intSala = Integer.parseInt(line);
 
             /* Se agrega a sala */
             idAsignada = server.addConexion(TCP, intSala);
+            /*Envia el ID de cliente como string*/
+            out.print(String.valueOf(id));
 
+            
             /*Se pone en bucle, en espera retransmitiendo información hasta fin de conexión*/
             while (!TCP.isClosed()) {
                 String mensaje;
