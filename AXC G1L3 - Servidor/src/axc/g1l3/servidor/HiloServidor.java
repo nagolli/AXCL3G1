@@ -73,7 +73,7 @@ public class HiloServidor extends Thread
             /*Envia el ID de cliente como string*/
             out.print(String.valueOf(id));
 
-            
+
             /*Se pone en bucle, en espera retransmitiendo información hasta fin de conexión*/
             while (!TCP.isClosed()) {
                 String mensaje;
