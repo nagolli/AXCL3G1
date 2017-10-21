@@ -45,7 +45,7 @@ public class Clientes
 
     void apagar(int value) throws IOException
     {
-        for(int i=0;i<value;i++)
+        for(int i=0;(i<value)&&(Listado.size()>0);i++)
         {
             Listado.get(Listado.size()-1).close();
             Listado.remove(Listado.size()-1);

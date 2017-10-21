@@ -42,7 +42,7 @@ public class Ventana extends javax.swing.JFrame
     
     public void SetSalas(int salas)
     {
-        TextClientes.setText(String.valueOf(salas));
+        TextSalas.setText(String.valueOf(salas));
     }
     
     /**

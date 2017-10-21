@@ -17,6 +17,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,13 +36,15 @@ public class HiloServidor extends Thread
     boolean almacenado;
     static int contador;
     int id;
+    String mensaje_enviado;
+    String mensaje_recibido;
 
     public static void setContador(int contador)
     {
         HiloServidor.contador = contador;
     }
 
-    public HiloServidor(Socket socket, Servidor server)
+    public HiloServidor(Socket socket, Servidor server, DatagramSocket Udp)
     {
         almacenado = false;
         this.TCP = socket;
@@ -49,6 +52,7 @@ public class HiloServidor extends Thread
         this.server = server;
         id = contador;
         HiloServidor.contador = id + 1;
+        UDP = Udp;
     }
 
     /*
@@ -58,39 +62,46 @@ public class HiloServidor extends Thread
     {
         try {
             /* Envia string de salas*/
-            OutputStream outstream = TCP.getOutputStream();
-            PrintWriter out = new PrintWriter(outstream);
-            out.print(server.getGrupos());
+            DataOutputStream enviar_datos = new DataOutputStream(TCP.getOutputStream());
+            DataInputStream recibir_datos = new DataInputStream(TCP.getInputStream());
 
+            /*
+            enviar_datos.writeUTF(mensaje_enviado);
+            enviar_datos.flush();
+            mensaje=recibir_datos.readUTF();
+            */
+
+            enviar_datos.writeUTF(server.getGrupos());
+            enviar_datos.flush();
+            
             /* Espera hasta recibir int de sala como string*/
-            BufferedReader inFromClient = new BufferedReader(new InputStreamReader(TCP.getInputStream()));
-            String line = "";
-            while ((line = inFromClient.readLine()) != null) {}
-            int intSala = Integer.parseInt(line);
+            int intSala = Integer.parseInt(recibir_datos.readUTF());
 
             /* Se agrega a sala */
             idAsignada = server.addConexion(TCP, intSala);
             /*Envia el ID de cliente como string*/
-            out.print(String.valueOf(id));
-
+            enviar_datos.writeUTF(String.valueOf(id));
+            enviar_datos.flush();
 
             /*Se pone en bucle, en espera retransmitiendo información hasta fin de conexión*/
-            while (!TCP.isClosed()) {
+            while (CheckNotClosed(TCP)) {
                 String mensaje;
                 byte[] mensajeEnBytes = new byte[256];
                 DatagramPacket PaqueteRecibido = new DatagramPacket(mensajeEnBytes, 256);
-                UDP.setSoTimeout(20000);
-
+                UDP.setSoTimeout(60000);
+                try{
                 UDP.receive(PaqueteRecibido);
                 if (!almacenado) {
                     server.addUDPdata(idAsignada, direccion, PaqueteRecibido);
                     almacenado = true;
                 }
-
                 mensaje = new String(mensajeEnBytes).trim();
                 if (mensaje != null) {
                     distribuirCoordenadas(idAsignada, PaqueteRecibido);
                 }
+                }
+                catch(SocketTimeoutException e)
+                {   server.desconexion(idAsignada, direccion);  }
             }
             /*Proceso en caso de desconexión*/
             server.desconexion(idAsignada, direccion);
@@ -150,4 +161,18 @@ public class HiloServidor extends Thread
         return server.GetPorClienteUDP(IDsala, indice);
     }
 
+    private boolean CheckNotClosed(Socket con) throws IOException
+    {
+        return !con.isClosed();
+        /*
+        DataOutputStream enviar_datos = new DataOutputStream(con.getOutputStream());
+        try {
+            enviar_datos.writeUTF(" ");
+            return true;
+        } catch (IOException ex) {
+            return false;
+        }
+        */
+    }
+    
 }
