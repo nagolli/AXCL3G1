@@ -31,7 +31,7 @@ public class HiloServidor extends Thread
     protected Servidor server;
     protected Socket TCP;
     DatagramSocket UDP;
-    int idAsignada;
+    int idAsignada,idClienteAsignada;
     InetAddress direccion;
     boolean almacenado;
     static int contador;
@@ -77,11 +77,17 @@ public class HiloServidor extends Thread
             int intSala = Integer.parseInt(recibir_datos.readUTF());
 
             /* Se agrega a sala */
+            //System.out.println("Sala solicitada: "+intSala);
             idAsignada = server.addConexion(TCP, intSala);
-            /*Envia el ID de cliente como string*/
-            enviar_datos.writeUTF(String.valueOf(id));
+            System.out.println("Id asignada "+idAsignada);
+            /*Envia el ID de cliente y ID de Sala como string*/
+            enviar_datos.writeUTF(String.valueOf(id)+"/"+String.valueOf(idAsignada)+"/");
             enviar_datos.flush();
 
+            /*El cliente manda su puerto UDP*/
+            int numPort = Integer.parseInt(recibir_datos.readUTF());
+            server.addUDPdata(idAsignada, direccion, numPort);
+            
             /*Se pone en bucle, en espera retransmitiendo información hasta fin de conexión*/
             while (CheckNotClosed(TCP)) {
                 String mensaje;
@@ -94,17 +100,11 @@ public class HiloServidor extends Thread
 
                     mensaje = new String(mensajeEnBytes).trim();
                     if (mensaje != null) {
-
-                        if (!almacenado) {
-                            //System.out.println("Paquete almacenado");
-                            server.addUDPdata(idAsignada, direccion, procesarMensaje(mensaje, 4));
-                            almacenado = true;
-                        }
-                        distribuirCoordenadas(idAsignada, PaqueteRecibido);
+                        idClienteAsignada=procesarMensaje(mensaje,5);
+                        distribuirCoordenadas(idClienteAsignada, PaqueteRecibido);
                     }
                 } catch (SocketTimeoutException e) {
-                    server.desconexion(idAsignada, direccion);
-                    System.out.println("Paquete no recibido, desconexion");
+                    
                 }
             }
             /*Proceso en caso de desconexión*/
@@ -124,21 +124,23 @@ public class HiloServidor extends Thread
     
     Se llama desde el Run
      */
-    private void distribuirCoordenadas(int IDsala, DatagramPacket paqueteRecibido
-    )
+    private void distribuirCoordenadas(int IDsala, DatagramPacket paqueteRecibido)
     {
         byte[] mensajeEnBytes;
         DatagramPacket paqueteEnviado;
         int portDest;
-        InetAddress address;
+        InetAddress dir;
         try {
+            //System.out.println("Enviando datos a sala"+IDsala+" que tiene "+GetClientesSala(IDsala)+" clientes");
             for (int i = 0; i < GetClientesSala(IDsala); i++) {
                 mensajeEnBytes = paqueteRecibido.getData();
                 portDest = GetPorCliente(IDsala, i);
+                //System.out.println("Enviando datos a "+portDest);
                 if (portDest > 0) {
-                    address = GetDirCliente(IDsala, i);
-                    if (address != null) {
-                        paqueteEnviado = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, address, portDest); // Envía
+                    dir = GetDirCliente(IDsala, i);
+                    if (dir != null) {
+                        //System.out.println("Paquete enviado a "+dir+":"+portDest+" de contenido"+new String(mensajeEnBytes).trim());
+                        paqueteEnviado = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, dir, portDest); // Envía
                         UDP.send(paqueteEnviado);
                     }
                 }
@@ -178,7 +180,7 @@ public class HiloServidor extends Thread
         }
          */
     }
-
+    
     private int procesarMensaje(String Mensaje, int c)
     {
         String num="";

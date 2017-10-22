@@ -151,14 +151,18 @@ public class Servidor
      */
     public int GetPorClienteUDP(int IDsala, int indice)
     {
-        for (int i = 0; i < listaUDP.size(); i++) {
-            for (int j = 0; j < listaUDP.get(i).size(); j++) {
-                try {
-                    return listaUDP.get(i).get(j).get(indice);
-                } catch (Exception e) {
+        for (int i = 0; i < idSalas.size(); i++) {
+            for (int j = 0; j < idSalas.get(i).size(); j++) {
+                if (IDsala == idSalas.get(i).get(j)) {
+                    try {
+                        return listaUDP.get(i).get(j).get(indice);
+                    } catch (Exception e) {
+                        System.out.println("I/O error: " + e);
+                    }
                 }
             }
         }
+
         return 0;
     }
 
@@ -168,9 +172,11 @@ public class Servidor
      */
     public InetAddress GetDirCliente(int IDsala, int indice)
     {
-        for (int i = 0; i < listaTCP.size(); i++) {
-            for (int j = 0; j < listaTCP.get(i).size(); j++) {
-                return listaTCP.get(i).get(j).get(indice).getLocalAddress();
+        for (int i = 0; i < idSalas.size(); i++) {
+            for (int j = 0; j < idSalas.get(i).size(); j++) {
+                if (IDsala == idSalas.get(i).get(j)) {
+                    return listaTCP.get(i).get(j).get(indice).getLocalAddress();
+                }
             }
         }
         return null;
@@ -206,21 +212,21 @@ public class Servidor
             aux = listaTCP.get(intSala).get(i).size();
             if (aux < maxClientes) {
                 listaTCP.get(intSala).get(i).add(TCP);
-                listaUDP.get(intSala).get(i).add(null);
+                listaUDP.get(intSala).get(i).add(0);
                 return idSalas.get(intSala).get(i);
             }
         }
         /*
         Si no hay espacio creará una nueva sala y añadirá el socket
          */
+        salas++;
         listaTCP.get(intSala).add(new ArrayList());
         listaUDP.get(intSala).add(new ArrayList());
-        idSalas.get(intSala).add(salas + 1);
-        salas++;
+        idSalas.get(intSala).add(salas);
         vista.SetSalas(salas);
         listaTCP.get(intSala).get(listaTCP.get(intSala).size() - 1).add(TCP);
         listaUDP.get(intSala).get(listaUDP.get(intSala).size() - 1).add(0);
-        return salas;
+        return salas; //nueva ID de sala será la maxima cantidad de salas
     }
 
     /*
@@ -228,13 +234,16 @@ public class Servidor
      */
     public void addUDPdata(int idAsignada, InetAddress dir, int data)
     {
+        
         for (int i = 0; i < idSalas.size(); i++) {
             for (int j = 0; j < idSalas.get(i).size(); j++) {
                 if (idSalas.get(i).get(j) == idAsignada) {
                     for (int k = 0; k < listaTCP.get(i).get(j).size(); k++) {
                         if (dir.equals(listaTCP.get(i).get(j).get(k).getLocalAddress())) {
-                            listaUDP.get(i).get(j).set(k, data);
-                            return;
+                            if (listaUDP.get(i).get(j).get(k) == 0) {
+                                listaUDP.get(i).get(j).set(k, data);
+                                return;
+                            }
                         }
                     }
                 }

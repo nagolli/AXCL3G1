@@ -17,6 +17,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import static jdk.nashorn.internal.runtime.Debug.id;
 
 /**
@@ -41,14 +42,16 @@ class Cliente
     String mensaje_enviado = "";
     String mensaje = "";
     byte mensaje_recibido;
-    int id;
+    int id,idSala;
     DataOutputStream enviar_datos;
     DataInputStream recibir_datos;
     vistaCliente vista;
+    ArrayList<Vecino> miembros_sala;
 
     public Cliente()
     {
         puerto_servidor = 1993;
+        miembros_sala = new ArrayList();
     }
 
     public Cliente(Socket cliente, Cliente cl)
@@ -58,6 +61,7 @@ class Cliente
         //address = cliente.getLocalAddress();
         host = "localhost";
         this.cl = cl;
+        miembros_sala = new ArrayList();
     }
 
     public void Conectar(vistaCliente vista)
@@ -126,17 +130,51 @@ class Cliente
     public boolean seleccionadoGrupo(int i)
     {
         try {
+            //System.out.println("Sala solicitada: "+i);
             enviar_datos.writeUTF(String.valueOf(i));
             enviar_datos.flush();
             //Recibir ID
-            id = Integer.parseInt(recibir_datos.readUTF());
+            mensaje=recibir_datos.readUTF();
+            id = Integer.parseInt(this.procesarMensaje(mensaje, 1));
+            idSala = Integer.parseInt(this.procesarMensaje(mensaje, 2));
             UDP = new DatagramSocket();
+            //Enviar Puerto UDP
+            enviar_datos.writeUTF(String.valueOf(UDP.getLocalPort()));
+            enviar_datos.flush();
+            //Bucle
             new HiloEnviado(cliente, this, UDP).start();
-            new HiloRecepcion(cliente,this,UDP).start();
+            new HiloRecepcion(cliente, this, UDP).start();
             return true;
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public void recibirVecino(int id, int x, int y)
+    {
+        try{
+        boolean seguir = true;
+        boolean encontrado=false;
+        int i;
+        for (i = 0; i < miembros_sala.size(); i++) {
+            if (seguir) {
+                encontrado = miembros_sala.get(i).Actualizar(id, x, y);
+                if(encontrado==true)
+                {
+                    seguir=false;
+                }
+            }
+        }
+        if(!encontrado)
+        {
+            miembros_sala.add(new Vecino(id,x,y,this.id));
+        }
+        }
+        catch(Exception e)
+        {
+            System.err.println("IOException " + e);
+        }
+        //System.out.println(miembros_sala);
     }
 
     public Cliente getCl()
@@ -252,5 +290,38 @@ class Cliente
     public int getY()
     {
         return (vista.getPosY());
+    }
+    
+    public ArrayList<Vecino> getVecinos()
+    {
+            return miembros_sala;
+    }
+    
+    private String procesarMensaje(String Mensaje, int c)
+    {
+        String nombre="";
+        int aux=1;
+        for (int i = 0; i < Mensaje.length(); i++) {
+            if (Mensaje.charAt(i) == '/') {
+                if(aux==c)
+                {
+                    return nombre;
+                }
+                else
+                {
+                    nombre="";
+                    aux++;
+                }
+            } else {
+                nombre = nombre + Mensaje.charAt(i);
+            }
+        }
+        return "";
+        
+    }
+
+    int GetSala()
+    {
+        return this.idSala;
     }
 }

@@ -70,13 +70,19 @@ public class HiloCliente extends Thread
             enviar_datos.writeUTF(String.valueOf(aux));
             enviar_datos.flush();
             //Recibir ID
-            int id=Integer.parseInt(recibir_datos.readUTF());
+            mensaje=recibir_datos.readUTF();
+            int id = Integer.parseInt(this.procesarMensaje(mensaje, 1));
+            int idSala = Integer.parseInt(this.procesarMensaje(mensaje, 2));
             
             UDP=new DatagramSocket();
             this.NuevaPosicion();
+            //Enviar puerto UDP
+            //Enviar Puerto UDP
+            enviar_datos.writeUTF(String.valueOf(UDP.getLocalPort()));
+            enviar_datos.flush();
             //Bucle de envio/recepción
             while (CheckNotClosed(TCP)) {
-                this.enviarCoordenadas(UDP, id, x, y);
+                this.enviarCoordenadas(UDP, id, x, y, idSala);
                 Mover();
                 Thread.sleep(1000);
             }
@@ -155,7 +161,7 @@ public class HiloCliente extends Thread
             return true;
     }
 
-    private void enviarCoordenadas(DatagramSocket UDP, int id, int x,int y) throws UnknownHostException
+    private void enviarCoordenadas(DatagramSocket UDP, int id, int x,int y, int k) throws UnknownHostException
     {
         String mensaje;
         DatagramPacket paquete;
@@ -165,17 +171,40 @@ public class HiloCliente extends Thread
         try 
         {
             direccion = InetAddress.getByName("localhost");
-            mensaje = id + "/" + x + "/" + y + "/" + UDP.getLocalPort()+"/";
+            mensaje = id + "/" + x + "/" + y + "/" + UDP.getLocalPort()+"/"+k+"/";
             mensaje_bytes = mensaje.getBytes();
             paquete = new DatagramPacket(mensaje_bytes, mensaje.length(), direccion, puerto_servidor);
 
             UDP.send(paquete);
-            System.out.println("El cliente " + id + " envia sus coordenadas");
+            //System.out.println("El cliente " + id + " envia sus coordenadas");
         }
         catch (IOException e) 
         {
 
         }
+    }
+
+    private String procesarMensaje(String Mensaje, int c)
+    {
+        String nombre="";
+        int aux=1;
+        for (int i = 0; i < Mensaje.length(); i++) {
+            if (Mensaje.charAt(i) == '/') {
+                if(aux==c)
+                {
+                    return nombre;
+                }
+                else
+                {
+                    nombre="";
+                    aux++;
+                }
+            } else {
+                nombre = nombre + Mensaje.charAt(i);
+            }
+        }
+        return "";
+        
     }
     
 }

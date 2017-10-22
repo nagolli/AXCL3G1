@@ -45,14 +45,13 @@ public class HiloRecepcion extends Thread
                 try {
                     UDP.receive(servPaquete);
                     mensaje = new String(mensaje_bytes).trim();
-                    //  id/x/y
+                    //System.out.println("Paquete recibido "+mensaje+ " y mi puerto es "+UDP.getLocalPort());
                     id=procesarMensaje(mensaje,1);
-                    id=procesarMensaje(mensaje,2);
-                    id=procesarMensaje(mensaje,3);
-                    System.out.println(id+"/"+x+"/"+y);
+                    x=procesarMensaje(mensaje,2);
+                    y=procesarMensaje(mensaje,3);
+                    //System.out.println(id+"/"+x+"/"+y);
+                    padre.recibirVecino(id, x, y);
                     
-                    
-
                 } catch (SocketTimeoutException e) {
                     TCP.close();
                 }

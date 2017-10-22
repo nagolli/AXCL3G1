@@ -36,14 +36,14 @@ public class HiloEnviado extends Thread
     {
         try {
             while (CheckNotClosed(TCP)) {
-                enviarCoordenadas(UDP, padre.getId(), padre.getX(), padre.getY());
+                enviarCoordenadas(UDP, padre.getId(), padre.getX(), padre.getY(), padre.GetSala());
                 Thread.sleep(1000);
             }
         } catch (Exception e) {
         }
     }
 
-    public void enviarCoordenadas(DatagramSocket UDP, int id, int x, int y) throws UnknownHostException
+    public void enviarCoordenadas(DatagramSocket UDP, int id, int x, int y, int k) throws UnknownHostException
     {
         String mensaje;
         DatagramPacket paquete;
@@ -53,7 +53,7 @@ public class HiloEnviado extends Thread
         try {
             ///< Esto manda la localización
             direccion = InetAddress.getByName("localhost");
-            mensaje = id + "/" + x + "/" + y + "/" + UDP.getLocalPort()+"/";
+            mensaje = id + "/" + x + "/" + y + "/" + UDP.getLocalPort()+"/"+ k+"/";
             mensaje_bytes = mensaje.getBytes();
             paquete = new DatagramPacket(mensaje_bytes, mensaje.length(), direccion, puerto_servidor);
 

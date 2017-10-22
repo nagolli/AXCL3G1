@@ -5,10 +5,14 @@
  */
 package axc.g1l3.cliente;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import static java.lang.Math.random;
+import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.Timer;
 
 /**
  *
@@ -271,6 +275,7 @@ public class vistaCliente extends javax.swing.JFrame
         {
             botonAceptar.setEnabled(false);
             botonDesconectar.setEnabled(true);
+            timer.start();
         }
 
     }//GEN-LAST:event_botonAceptarActionPerformed
@@ -379,7 +384,7 @@ public class vistaCliente extends javax.swing.JFrame
 
     public static int getGrupo()
     {
-        return n_grupo;
+        return comboBoxSelec.getSelectedIndex();
     }
 
     // Función que introduce el número de grupos que se puede seleccionar
@@ -450,4 +455,20 @@ public class vistaCliente extends javax.swing.JFrame
         comboBoxSelec.setModel(model);
 
     }
+    
+    public void actualizarPosiciones(ArrayList<Vecino> vecinos)
+    {
+        String cadena= "";
+        for(int i=0;i<vecinos.size();i++)
+            cadena=cadena+vecinos.get(i).toString()+"\n";
+        textAreaInfo.setText(cadena);
+    }
+    
+    Timer timer = new Timer (1000, new ActionListener () 
+{ 
+    public void actionPerformed(ActionEvent e) 
+    { 
+        actualizarPosiciones(c.getVecinos());
+     } 
+}); 
 }
