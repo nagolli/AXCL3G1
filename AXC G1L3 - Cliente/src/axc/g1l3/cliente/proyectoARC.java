@@ -19,7 +19,7 @@ public class proyectoARC {
         Cliente cliente = new Cliente();
         vistaCliente vc = new vistaCliente(cliente);
         vc.setVisible(true);
-        cliente.Conectar();
+        cliente.Conectar(vc);
       
 
         

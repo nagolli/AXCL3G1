@@ -5,22 +5,31 @@
  */
 package axc.g1l3.cliente;
 
+import static java.lang.Math.random;
+import java.util.Vector;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+
 /**
  *
  * @author aline
  */
-public class vistaCliente extends javax.swing.JFrame {
+public class vistaCliente extends javax.swing.JFrame
+{
 
     private static int n_grupo;
     private static Cliente c = new Cliente();
+
     /**
      * Creates new form viestaCliente
      */
-    public vistaCliente(Cliente c) {
+    public vistaCliente(Cliente c)
+    {
         initComponents();
-        n_grupo=0;
+        n_grupo = 0;
         this.c = c;
-               
+        comboBoxItems = new Vector();
+        model = new DefaultComboBoxModel(comboBoxItems);
     }
 
     /**
@@ -30,12 +39,11 @@ public class vistaCliente extends javax.swing.JFrame {
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    private void initComponents()
+    {
 
         jInternalFrame1 = new javax.swing.JInternalFrame();
         botonDesconectar = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        textAreaGrupos = new javax.swing.JTextArea();
         botonAceptar = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         comboBoxSelec = new javax.swing.JComboBox();
@@ -43,25 +51,37 @@ public class vistaCliente extends javax.swing.JFrame {
         textAreaInfo = new javax.swing.JTextArea();
         jLabel2 = new javax.swing.JLabel();
         botonSalir = new javax.swing.JButton();
+        textoX = new javax.swing.JTextField();
+        textoY = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
+        jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        jInternalFrame1.setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         jInternalFrame1.setVisible(true);
 
-        botonDesconectar.setText("Desconectar");
-        botonDesconectar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        botonDesconectar.setText("Salir de Sala");
+        botonDesconectar.setEnabled(false);
+        botonDesconectar.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 botonDesconectarActionPerformed(evt);
             }
         });
 
-        textAreaGrupos.setColumns(20);
-        textAreaGrupos.setRows(5);
-        jScrollPane1.setViewportView(textAreaGrupos);
-
-        botonAceptar.setText("Aceptar");
-        botonAceptar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        botonAceptar.setText("Acceder a Sala");
+        botonAceptar.setEnabled(false);
+        botonAceptar.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 botonAceptarActionPerformed(evt);
             }
         });
@@ -69,67 +89,163 @@ public class vistaCliente extends javax.swing.JFrame {
         jLabel1.setText("Lista de grupos:");
 
         comboBoxSelec.setModel(new javax.swing.DefaultComboBoxModel(new String[] {  }));
-        comboBoxSelec.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                comboBoxSelecActionPerformed(evt);
-            }
-        });
 
         textAreaInfo.setColumns(20);
         textAreaInfo.setRows(5);
+        textAreaInfo.setEnabled(false);
         jScrollPane2.setViewportView(textAreaInfo);
 
         jLabel2.setText("Posición de los clientes");
 
-        botonSalir.setText("Salir");
-        botonSalir.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        botonSalir.setText("Cerrar Programa");
+        botonSalir.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 botonSalirActionPerformed(evt);
             }
         });
+
+        textoX.setText(String.valueOf((int)(100+random()*200)));
+        textoX.setEnabled(false);
+
+        textoY.setText(String.valueOf((int)(100+random()*200)));
+        textoY.setEnabled(false);
+
+        jLabel3.setText("x:");
+
+        jLabel4.setText("y:");
+
+        jButton1.setText("Más X");
+        jButton1.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jButton2.setText("Más Y");
+        jButton2.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        jButton3.setText("Menos X");
+        jButton3.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
+        jButton4.setText("Menos Y");
+        jButton4.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
+        jLabel5.setText("Posicion Propia");
 
         javax.swing.GroupLayout jInternalFrame1Layout = new javax.swing.GroupLayout(jInternalFrame1.getContentPane());
         jInternalFrame1.getContentPane().setLayout(jInternalFrame1Layout);
         jInternalFrame1Layout.setHorizontalGroup(
             jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jInternalFrame1Layout.createSequentialGroup()
-                .addGap(21, 21, 21)
+                .addGap(34, 34, 34)
                 .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(botonSalir)
                     .addGroup(jInternalFrame1Layout.createSequentialGroup()
-                        .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jInternalFrame1Layout.createSequentialGroup()
-                                .addComponent(comboBoxSelec, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 51, Short.MAX_VALUE)
-                                .addComponent(botonAceptar))
-                            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(30, 30, 30)
                         .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 399, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2)
-                            .addComponent(botonDesconectar))))
-                .addContainerGap(69, Short.MAX_VALUE))
+                            .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(jButton1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jButton3, javax.swing.GroupLayout.Alignment.LEADING))
+                            .addGroup(jInternalFrame1Layout.createSequentialGroup()
+                                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(textoX, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(18, 18, 18)
+                        .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jInternalFrame1Layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(textoY, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jInternalFrame1Layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(jButton4))
+                            .addComponent(jButton2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 18, 18))
+                    .addGroup(jInternalFrame1Layout.createSequentialGroup()
+                        .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jInternalFrame1Layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(botonAceptar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(jInternalFrame1Layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(comboBoxSelec, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGap(30, 30, 30))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jInternalFrame1Layout.createSequentialGroup()
+                        .addGap(50, 50, 50)
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jInternalFrame1Layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(jInternalFrame1Layout.createSequentialGroup()
+                            .addComponent(botonDesconectar)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(botonSalir))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 399, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(211, 211, 211))
         );
         jInternalFrame1Layout.setVerticalGroup(
             jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jInternalFrame1Layout.createSequentialGroup()
-                .addContainerGap(22, Short.MAX_VALUE)
+                .addGap(27, 27, 27)
                 .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
+                .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jInternalFrame1Layout.createSequentialGroup()
+                        .addComponent(comboBoxSelec, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(botonAceptar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jInternalFrame1Layout.createSequentialGroup()
+                                .addComponent(textoY, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(14, 14, 14)
+                                .addComponent(jButton2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton4))
+                            .addGroup(jInternalFrame1Layout.createSequentialGroup()
+                                .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(textoX, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel3)
+                                    .addComponent(jLabel4))
+                                .addGap(14, 14, 14)
+                                .addComponent(jButton1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton3)))))
+                .addGap(18, 18, 18)
                 .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 217, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(botonAceptar)
-                    .addComponent(comboBoxSelec, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(botonSalir)
                     .addComponent(botonDesconectar))
-                .addGap(11, 11, 11)
-                .addComponent(botonSalir)
-                .addContainerGap())
+                .addContainerGap(31, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -148,44 +264,74 @@ public class vistaCliente extends javax.swing.JFrame {
 
     private void botonAceptarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonAceptarActionPerformed
         // TODO add your handling code here:
-         System.out.println("Aceptar");
-         
-         // Se debe enviar el número de grupo al servidor
-         c.enviarGrupoServidor(getGrupo());
-       
-    }//GEN-LAST:event_botonAceptarActionPerformed
+        System.out.println("Aceptar");
 
-    private void comboBoxSelecActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxSelecActionPerformed
-        // TODO add your handling code here:   
-        
-        String grupo =(String)comboBoxSelec.getSelectedItem();
-        //int n_grupo;
-        
-        System.out.println("Has seleccionado el "+ (String)comboBoxSelec.getSelectedItem()); 
-        
-        grupo = grupo.substring(grupo.length() - 1);
-        n_grupo = Integer.parseInt(grupo);
-        
-        n_grupo = getGrupo();
-        setGrupo(n_grupo); 
-        
-    }//GEN-LAST:event_comboBoxSelecActionPerformed
+        // Se debe enviar el número de grupo al servidor
+        if (c.seleccionadoGrupo(getGrupo()));
+        {
+            botonAceptar.setEnabled(false);
+            botonDesconectar.setEnabled(true);
+        }
+
+    }//GEN-LAST:event_botonAceptarActionPerformed
 
     private void botonSalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonSalirActionPerformed
         // TODO add your handling code here:
-         System.out.println("Salir");
-         System.exit(0);
+        System.out.println("Salir");
+        System.exit(0);
     }//GEN-LAST:event_botonSalirActionPerformed
 
     private void botonDesconectarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonDesconectarActionPerformed
         // TODO add your handling code here:
         System.out.println("Desconectar");
+        botonDesconectar.setEnabled(false);
     }//GEN-LAST:event_botonDesconectarActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jButton1ActionPerformed
+    {//GEN-HEADEREND:event_jButton1ActionPerformed
+        String SX = textoX.getText();
+        int v = Integer.parseInt(SX) + 1;
+        textoX.setText(String.valueOf(v));
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jButton3ActionPerformed
+    {//GEN-HEADEREND:event_jButton3ActionPerformed
+        String SX = textoX.getText();
+        int v = Integer.parseInt(SX) - 1;
+        textoX.setText(String.valueOf(v));
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jButton2ActionPerformed
+    {//GEN-HEADEREND:event_jButton2ActionPerformed
+        String SY = textoY.getText();
+        int v = Integer.parseInt(SY) + 1;
+        textoY.setText(String.valueOf(v));
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jButton4ActionPerformed
+    {//GEN-HEADEREND:event_jButton4ActionPerformed
+        String SY = textoY.getText();
+        int v = Integer.parseInt(SY) - 1;
+        textoY.setText(String.valueOf(v));
+    }//GEN-LAST:event_jButton4ActionPerformed
+
+
+    public int getPosX()
+    {
+        return Integer.parseInt(textoX.getText());
+    }
+
+
+    public int getPosY()
+    {
+        return Integer.parseInt(textoY.getText());
+    }
 
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
+    public static void main(String args[])
+    {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -210,64 +356,98 @@ public class vistaCliente extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
+        java.awt.EventQueue.invokeLater(new Runnable()
+        {
             @Override
-            public void run() {
+            public void run()
+            {
                 new vistaCliente(c).setVisible(true);
-                  
-                setTextArea("Lista de grupos"); // Se le pasará la lista de grupos para mostrar en el TextArea
- 
-                setComboBox(10); // Número de grupos para seleccionar
-                
+
             }
         });
-      
-           
+
     }
-    
+
     // Función que escribe la información sobre el text area (en nuestro caso, los grupos disponibles)
-    public static void setTextArea(String texto)
-    {
-        textAreaGrupos.setText(texto);   
-    }
-    
     // Función que guarda el grupo seleccionado
     public static void setGrupo(int number)
     {
         n_grupo = number;
-        System.out.println("Numero de grupo: "+n_grupo);
-        
+        System.out.println("Numero de grupo: " + n_grupo);
+
     }
-    
+
     public static int getGrupo()
     {
         return n_grupo;
     }
-    
+
     // Función que introduce el número de grupos que se puede seleccionar
     // dependiendo de la lista recibida.
     public static void setComboBox(int num_grupos)
     {
-        
-        for(int i=1; i !=num_grupos+1; i++)
-          comboBoxSelec.addItem("Grupo "+i);      
+
+        for (int i = 1; i != num_grupos + 1; i++) {
+            comboBoxSelec.addItem("Grupo " + i);
+        }
     }
-    
-    
-    
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton botonAceptar;
     private javax.swing.JButton botonDesconectar;
     private javax.swing.JButton botonSalir;
     private static javax.swing.JComboBox comboBoxSelec;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane2;
-    private static javax.swing.JTextArea textAreaGrupos;
     private javax.swing.JTextArea textAreaInfo;
+    private javax.swing.JTextField textoX;
+    private javax.swing.JTextField textoY;
     // End of variables declaration//GEN-END:variables
+    Vector comboBoxItems;
+    DefaultComboBoxModel model;
 
+    void ActivarSeleccionSala()
+    {
+        botonAceptar.setEnabled(true);
+    }
+
+    void ConectarServidor()
+    {
+        botonDesconectar.setEnabled(true);
+        botonDesconectar.setText("Conectar a Servidor");
+    }
+
+    void DesconectarSala()
+    {
+        botonDesconectar.setEnabled(false);
+        botonDesconectar.setText("Salir de Sala");
+    }
+
+    public void setListaDesplegable(String Mensaje)
+    {
+        comboBoxItems = new Vector();
+        String nombre = "";
+        for (int i = 0; i < Mensaje.length(); i++) {
+            if (Mensaje.charAt(i) == '/') {
+                comboBoxItems.add(nombre);
+                nombre = "";
+            } else {
+                nombre = nombre + Mensaje.charAt(i);
+            }
+        }
+
+        model = new DefaultComboBoxModel(comboBoxItems);
+        comboBoxSelec.setModel(model);
+
+    }
 }

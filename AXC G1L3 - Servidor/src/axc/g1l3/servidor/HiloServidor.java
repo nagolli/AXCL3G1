@@ -69,11 +69,10 @@ public class HiloServidor extends Thread
             enviar_datos.writeUTF(mensaje_enviado);
             enviar_datos.flush();
             mensaje=recibir_datos.readUTF();
-            */
-
+             */
             enviar_datos.writeUTF(server.getGrupos());
             enviar_datos.flush();
-            
+
             /* Espera hasta recibir int de sala como string*/
             int intSala = Integer.parseInt(recibir_datos.readUTF());
 
@@ -88,20 +87,25 @@ public class HiloServidor extends Thread
                 String mensaje;
                 byte[] mensajeEnBytes = new byte[256];
                 DatagramPacket PaqueteRecibido = new DatagramPacket(mensajeEnBytes, 256);
-                UDP.setSoTimeout(60000);
-                try{
-                UDP.receive(PaqueteRecibido);
-                if (!almacenado) {
-                    server.addUDPdata(idAsignada, direccion, PaqueteRecibido);
-                    almacenado = true;
+                UDP.setSoTimeout(10000);
+                try {
+                    UDP.receive(PaqueteRecibido);
+                    //System.out.println("Paquete recibido");
+
+                    mensaje = new String(mensajeEnBytes).trim();
+                    if (mensaje != null) {
+
+                        if (!almacenado) {
+                            //System.out.println("Paquete almacenado");
+                            server.addUDPdata(idAsignada, direccion, procesarMensaje(mensaje, 4));
+                            almacenado = true;
+                        }
+                        distribuirCoordenadas(idAsignada, PaqueteRecibido);
+                    }
+                } catch (SocketTimeoutException e) {
+                    server.desconexion(idAsignada, direccion);
+                    System.out.println("Paquete no recibido, desconexion");
                 }
-                mensaje = new String(mensajeEnBytes).trim();
-                if (mensaje != null) {
-                    distribuirCoordenadas(idAsignada, PaqueteRecibido);
-                }
-                }
-                catch(SocketTimeoutException e)
-                {   server.desconexion(idAsignada, direccion);  }
             }
             /*Proceso en caso de desconexión*/
             server.desconexion(idAsignada, direccion);
@@ -172,7 +176,28 @@ public class HiloServidor extends Thread
         } catch (IOException ex) {
             return false;
         }
-        */
+         */
     }
-    
+
+    private int procesarMensaje(String Mensaje, int c)
+    {
+        String num="";
+        int aux=0;
+        for (int i = 0; i < Mensaje.length(); i++) {
+            if (Mensaje.charAt(i) == '/') {
+                aux++;
+                if(aux==c)
+                {
+                    return Integer.parseInt(num);
+                }
+                else
+                {
+                    num = "";
+                }
+            } else {
+                num = num + Mensaje.charAt(i);
+            }
+        }
+        return -1;  
+    }
 }

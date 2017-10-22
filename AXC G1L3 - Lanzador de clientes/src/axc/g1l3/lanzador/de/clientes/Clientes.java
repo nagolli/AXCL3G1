@@ -39,7 +39,9 @@ public class Clientes
     {
         for(int i=0;i<Listado.size();i++)
         {
+            try{
             Listado.get(i).close();
+            }catch(Exception e){ }
         }
     }
 
@@ -47,8 +49,10 @@ public class Clientes
     {
         for(int i=0;(i<value)&&(Listado.size()>0);i++)
         {
+            try{
             Listado.get(Listado.size()-1).close();
             Listado.remove(Listado.size()-1);
+            }catch(Exception e){ }
         }
     }
     

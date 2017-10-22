@@ -38,7 +38,7 @@ public class Servidor
     Ventana vista;
     static int PORT;
     ArrayList< ArrayList< ArrayList<Socket>>> listaTCP; //Grupo/Sala/Socket
-    ArrayList< ArrayList< ArrayList<DatagramPacket>>> listaUDP; //Grupo/Sala/Socket
+    ArrayList< ArrayList< ArrayList<Integer>>> listaUDP; //Grupo/Sala/Socket
     ArrayList< ArrayList<Integer>> idSalas; //Grupo/IdSala
 
     /*
@@ -154,7 +154,7 @@ public class Servidor
         for (int i = 0; i < listaUDP.size(); i++) {
             for (int j = 0; j < listaUDP.get(i).size(); j++) {
                 try {
-                    return listaUDP.get(i).get(j).get(indice).getPort();
+                    return listaUDP.get(i).get(j).get(indice);
                 } catch (Exception e) {
                 }
             }
@@ -206,6 +206,7 @@ public class Servidor
             aux = listaTCP.get(intSala).get(i).size();
             if (aux < maxClientes) {
                 listaTCP.get(intSala).get(i).add(TCP);
+                listaUDP.get(intSala).get(i).add(null);
                 return idSalas.get(intSala).get(i);
             }
         }
@@ -218,20 +219,20 @@ public class Servidor
         salas++;
         vista.SetSalas(salas);
         listaTCP.get(intSala).get(listaTCP.get(intSala).size() - 1).add(TCP);
-        listaUDP.get(intSala).get(listaUDP.get(intSala).size() - 1).add(null);
+        listaUDP.get(intSala).get(listaUDP.get(intSala).size() - 1).add(0);
         return salas;
     }
 
     /*
     
      */
-    public void addUDPdata(int idAsignada, InetAddress dir, DatagramPacket data)
+    public void addUDPdata(int idAsignada, InetAddress dir, int data)
     {
         for (int i = 0; i < idSalas.size(); i++) {
             for (int j = 0; j < idSalas.get(i).size(); j++) {
                 if (idSalas.get(i).get(j) == idAsignada) {
                     for (int k = 0; k < listaTCP.get(i).get(j).size(); k++) {
-                        if (listaTCP.get(i).get(j).get(k).getLocalAddress() == dir) {
+                        if (dir.equals(listaTCP.get(i).get(j).get(k).getLocalAddress())) {
                             listaUDP.get(i).get(j).set(k, data);
                             return;
                         }
