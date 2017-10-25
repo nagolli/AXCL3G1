@@ -24,15 +24,17 @@ public class Ventana extends javax.swing.JFrame
     /**
      * Creates new form Ventana
      */
-    public Ventana(int max, int temas) throws FileNotFoundException
+    public Ventana(int clientes, int grupos, int iteraciones) throws FileNotFoundException
     {
         initComponents();
-        TextMaximo.setText(String.valueOf(max));
+        if(clientes%grupos==0)
+            TextMaximo.setText(String.valueOf(clientes/grupos));
+        else
+            TextMaximo.setText(String.valueOf((clientes/grupos)+1));
         TextClientes.setText("0");
-        TextSalas.setText("0");
+        TextSalas.setText(String.valueOf(grupos));
         this.setVisible(true);
-        servidor=new Servidor(max,this,temas);    //Creación del objeto
-        servidor.encender();                //Puesta en marcha, bucle infinito
+        servidor=new Servidor(clientes,grupos,iteraciones,this);    //Creación del objeto
     }
 
     public void SetClientes(int clientes)
@@ -45,7 +47,7 @@ public class Ventana extends javax.swing.JFrame
         TextSalas.setText(String.valueOf(salas));
     }
     
-    public void SetIteracion(int i)
+    public void SetIteraciones(int i)
     {
         TextIteracion.setText(String.valueOf(i));
     }
@@ -75,7 +77,7 @@ public class Ventana extends javax.swing.JFrame
         jLabel5 = new javax.swing.JLabel();
         TextIteracion = new javax.swing.JTextField();
         jScrollPane4 = new javax.swing.JScrollPane();
-        Latencia = new javax.swing.JTextArea();
+        Info = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -122,6 +124,7 @@ public class Ventana extends javax.swing.JFrame
         getContentPane().add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 160, -1, -1));
 
         BotonInicio.setText("Iniciar Prueba");
+        BotonInicio.setEnabled(false);
         BotonInicio.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -131,16 +134,16 @@ public class Ventana extends javax.swing.JFrame
         });
         getContentPane().add(BotonInicio, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 240, 120, 40));
 
-        jLabel5.setText("Iteración Máxima");
+        jLabel5.setText("Iteración");
         getContentPane().add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 190, -1, -1));
 
         TextIteracion.setText("0");
         getContentPane().add(TextIteracion, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 180, 170, 30));
 
-        Latencia.setEditable(false);
-        Latencia.setColumns(20);
-        Latencia.setRows(1000);
-        jScrollPane4.setViewportView(Latencia);
+        Info.setEditable(false);
+        Info.setColumns(20);
+        Info.setRows(1000);
+        jScrollPane4.setViewportView(Info);
 
         getContentPane().add(jScrollPane4, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 30, 370, 250));
 
@@ -154,11 +157,8 @@ public class Ventana extends javax.swing.JFrame
 
     private void BotonInicioActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_BotonInicioActionPerformed
     {//GEN-HEADEREND:event_BotonInicioActionPerformed
-        try {
-            servidor.iniciarUDP();
-        } catch (IOException ex) {
-            Logger.getLogger(Ventana.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        servidor.LanzarPrueba();
+        BotonInicio.setEnabled(false);
     }//GEN-LAST:event_BotonInicioActionPerformed
 
     /**
@@ -198,7 +198,7 @@ public class Ventana extends javax.swing.JFrame
             public void run()
             {
                 try {
-                    new Ventana(max,temas).setVisible(true);
+                    new Ventana(clientes,grupos,iteraciones).setVisible(true);
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(Ventana.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -209,7 +209,7 @@ public class Ventana extends javax.swing.JFrame
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BotonInicio;
     private javax.swing.JButton BotonSalir;
-    private javax.swing.JTextArea Latencia;
+    private javax.swing.JTextArea Info;
     private javax.swing.JTextArea TextClientes;
     private javax.swing.JTextField TextIteracion;
     private javax.swing.JTextArea TextMaximo;
@@ -224,12 +224,18 @@ public class Ventana extends javax.swing.JFrame
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     // End of variables declaration//GEN-END:variables
-static int max;
+static int clientes;
 Servidor servidor;
-static int temas;
+static int grupos;
+static int iteraciones;
 
-    void printLatencia(String linea)
+    void Lanzar()
     {
-        Latencia.setText(Latencia.getText()+linea);
+        BotonInicio.setEnabled(true);
+    }
+
+    void print(String linea)
+    {
+        Info.setText(Info.getText()+linea);
     }
 }

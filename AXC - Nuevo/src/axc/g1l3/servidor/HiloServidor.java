@@ -5,21 +5,15 @@
  */
 package axc.g1l3.servidor;
 
-import axc.g1l3.utilidades.MensajeroUDP;
-
-import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,185 +23,273 @@ import java.util.logging.Logger;
  */
 public class HiloServidor extends Thread
 {
-    
-    protected Servidor server;
-    protected Socket TCP;
-    private DatagramSocket UDP;
-    private int idClienteAsignada;
-    private InetAddress direccion;
-    private boolean almacenado;
-    private static int contador;
-    private int idCliente;
-    private String mensaje_enviado;
-    private String mensaje_recibido;
-    
-    public static void setContador(int contador)
+
+    int cantidadClientes;
+    int puertoServidor;
+    int tamanoGrupos;
+    int iteraciones;
+
+    ServerSocket TCP;
+    DatagramSocket UDP;
+    ArrayList<ArrayList<Socket>> Clientes = new ArrayList<>(cantidadClientes);
+    ArrayList<ArrayList<Long>> Latencias = new ArrayList<>(cantidadClientes);
+    Servidor padre;
+
+    public HiloServidor(int cantidadClientes, int tamanoGrupos, int iteraciones, int puertoServidor, Servidor padre)
     {
-        HiloServidor.contador = contador;
-    }
-    
-    public HiloServidor(Socket socket, Servidor server, DatagramSocket Udp)
-    {
-        almacenado = false;
-        this.TCP = socket;
-        direccion = TCP.getLocalAddress();
-        this.server = server;
-        idCliente = contador;
-        HiloServidor.contador = idCliente + 1;
-        UDP = Udp;
+        this.cantidadClientes = cantidadClientes;
+        this.tamanoGrupos = tamanoGrupos;
+        this.iteraciones = iteraciones;
+        this.puertoServidor = puertoServidor;
+        this.padre = padre;
     }
 
-    /*
-    Codigo que ejecuta mientras se encuentre conectado
-     */
-    public void run()
-    {
+    public void AceptarConexiones(){
+        int conexiones = 0, grupo = 0;
         try {
-            /* Cabecera de funciones TCP*/
-            DataOutputStream enviar_datos = new DataOutputStream(TCP.getOutputStream());
-            DataInputStream recibir_datos = new DataInputStream(TCP.getInputStream());
-            /*
-            enviar_datos.writeUTF(mensaje_enviado);
-            enviar_datos.flush();
-            mensaje=recibir_datos.readUTF();
-             */
-            enviar_datos.writeUTF(server.getGrupos());
-            enviar_datos.flush();
+            TCP = new ServerSocket(puertoServidor);
+            Clientes.add(new ArrayList<>(tamanoGrupos));
+            Latencias.add(new ArrayList<>(tamanoGrupos));
+            System.out.println("Esperando conexion de clientes...");
+            while (conexiones < cantidadClientes) {
+                Socket socket_conexion = TCP.accept();
+                Clientes.get(grupo).add(socket_conexion);
+                conexiones++;
 
-            /* Espera hasta recibir int de sala como string*/
-            int idTema = Integer.parseInt(recibir_datos.readUTF());
-
-            /* Se agrega a sala */
-            int idSala = server.addConexion(TCP, idTema, idCliente);
-            /*Envia el ID de cliente y ID de Sala como string*/
-            enviar_datos.writeUTF(String.valueOf(idCliente) + "/" + String.valueOf(idSala) + "/");
-            enviar_datos.flush();
-
-            /*El cliente manda su puerto UDP*/
-            int numPort = Integer.parseInt(recibir_datos.readUTF());
-            server.addUDPPort(idSala, direccion, numPort);
-            TCP.close();
-        } catch (SocketException ex) {
-            Logger.getLogger(HiloServidor.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(HiloServidor.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        /*Se pone en bucle, para realizar las conexiones UDP*/
-        while (server.getIteracion() < 100) {
-            
-        }
-    }
-
-    /*
-    Distribuir coordenadas:
-    Función que dada una ID de sala y un DatagramPacket, 
-    lo reenvia al resto de clientes en la sala.
-    
-    Se llama desde el BucleUDP
-     */
-    private void distribuirCoordenadas(int IDsala, DatagramPacket paqueteRecibido, int IdHilo)
-    {
-        byte[] mensajeEnBytes;
-        DatagramPacket paqueteEnviado;
-        int portDest, portSent;
-        InetAddress dir, dirSent;
-        portSent=server.GetPorClienteUDP(IDsala, IdHilo);
-        dirSent=server.GetDirCliente(IDsala, IdHilo);
-        mensajeEnBytes = paqueteRecibido.getData();
-        server.setUltimoMensajeEnviado(null,mensajeEnBytes,IDsala,IdHilo);
-        try {
-            //System.out.println("Enviando datos a sala"+IDsala+" que tiene "+GetClientesSala(IDsala)+" clientes");
-            for (int i = 0; i < GetClientesSala(IDsala); i++) {
-                portDest = GetPorCliente(IDsala, i);
-                dir = GetDirCliente(IDsala, i);
-                if(portSent!=portDest&&dirSent!=dir)
+                if (conexiones % tamanoGrupos == 0 && conexiones != cantidadClientes) 
                 {
-                //System.out.println("Paquete enviado a "+dir+":"+portDest+" de contenido"+new String(mensajeEnBytes).trim());
-                MensajeroUDP.EnviarMensaje3(UDP, dir, portDest, mensajeEnBytes);
-                paqueteEnviado = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, dir, portDest); // Envía
-                UDP.send(paqueteEnviado);
+                    grupo++;
+                    Clientes.add(new ArrayList<>(tamanoGrupos));
+                    Latencias.add(new ArrayList<>(tamanoGrupos));
                 }
+
             }
         } catch (IOException e) {
             System.err.println(e.getMessage());
             System.exit(1);
         }
     }
-
-    /*Funciones de consulta al server*/
-    private int GetClientesSala(int IDsala)
-    {
-        return server.GetClientesSala(IDsala);
-    }
     
-    private InetAddress GetDirCliente(int IDsala, int indice)
+    private void ComienzoComunicacion()
     {
-        return server.GetDirCliente(IDsala, indice);
-    }
-    
-    private int GetPorCliente(int IDsala, int indice)
-    {
-        return server.GetPorClienteUDP(IDsala, indice);
-    }
-    
-    private void BucleUDP()
-    {
-        /*Proceso si le llega:
-        1) Llega mensaje
-        2) Cual es su id?
-        3) En que estado esta?
-            Si ID.getEstado!=estado+1
-            4a) Se ignora el mensaje
-            Else
-            4b) Se procesa la respuesta         
-            5b) Se avanza estado
-         */
+        //TCP
+            /*
+            enviar_datos = new DataOutputStream(cliente.getOutputStream());
+            recibir_datos = new DataInputStream(cliente.getInputStream());
+            enviar_datos.writeUTF(mensaje_enviado);
+            enviar_datos.flush();
+            mensaje=recibir_datos.readUTF();
+             */
+        int i, j;
+        DataOutputStream enviar_datos=null;
         try {
-            String mensaje;
-            byte[] mensajeEnBytes = new byte[256];
-            DatagramPacket PaqueteRecibido = new DatagramPacket(mensajeEnBytes, 256);
-            UDP.setSoTimeout(10000);
-            
-            try {
-                UDP.receive(PaqueteRecibido);
-                //System.out.println("Paquete recibido");
-
-                mensaje = new String(mensajeEnBytes).trim();
-                if (mensaje != null) {
-                    int estado = MensajeroUDP.procesarMensajeInt(mensaje, 1);
-                    int idHilo = MensajeroUDP.procesarMensajeInt(mensaje, 2);
-                    int idSala = MensajeroUDP.procesarMensajeInt(mensaje, 3);
-                    int estadoCliente = server.getEstadoCliente(idHilo, idSala);
-                    if ((estadoCliente + 1 == estado) || (estado == 7 && estadoCliente == 7)) {
-                        switch (estado) {
-                            case 2:
-                                server.estadoClienteMas(idHilo, idSala);
-                                distribuirCoordenadas(idSala, PaqueteRecibido, idHilo);
-                                break;
-                            case 4:
-                                int idDest = MensajeroUDP.procesarMensajeInt(mensaje, 4);
-                                server.setUltimoMensajeEnviado(MensajeroUDP.EnviarMensaje5(UDP, direccion, estadoCliente, idDest),null,idSala,idHilo);
-                                break;
-                            case 6:
-                                int idRec = MensajeroUDP.procesarMensajeInt(mensaje, 4);
-                                server.estadoClienteMas(idHilo, idSala);
-                                server.setClienteRecibido(idSala, idHilo, idRec);
-                                break;
-                            case 7:
-                                String lat = MensajeroUDP.procesarMensajeStr(mensaje, 4);
-                                server.AnadirLatencia(Float.parseFloat(lat), idSala);
-                                MensajeroUDP.EnviarMensaje8(UDP, direccion, estadoCliente);
-                                break;
-                        }
-                        
-                    }
+            Socket destino;
+            for (i = 0; i < Clientes.size(); i++) {
+                for (j = 0; j < Clientes.get(i).size(); j++) {
+                    destino = (Socket) Clientes.get(i).get(j);
+                    enviar_datos = new DataOutputStream(destino.getOutputStream());
+                    enviar_datos.writeUTF((i * tamanoGrupos + j) + "/" + Clientes.get(i).size()+ "/");
+                    enviar_datos.flush();
                 }
-            } catch (SocketTimeoutException e) {
-                
+                System.out.println("Comunicacion iniciada con el grupo " + i + " que tiene " + j + " clientes");
             }
-        } catch (Exception e) {
-            
+            enviar_datos.close();
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
         }
     }
+    
+    @Override
+    public void run()
+    {
+        String mensaje;
+        int puertoDestino;
+        int grupoClienteRecibido;
+        int idClienteRecibido;
+        int idClienteEnviar;
+        InetAddress IP;
+        DatagramPacket paqueteRecibido;
+        DatagramPacket paqueteEnvio;
+        int contador;
+        ArrayList<DatagramPacket> Paquetes;
+        ArrayList<String> Mensajes;
+        byte[] mensajeEnBytes;
+        int idEnviar;
+
+        try {
+            UDP = new DatagramSocket(puertoServidor);
+            ComienzoComunicacion();
+
+            for (int i = 0; i < iteraciones; i++) {
+                padre.PrintIteracion(i+1);
+                contador = 0;
+                Paquetes = new ArrayList();
+                Mensajes = new ArrayList();
+                while (contador <= cantidadClientes) {
+                    if (contador == 0) {    //Recibir primer mensaje
+                        for (int c = 0; c < cantidadClientes; c++) {
+                            mensajeEnBytes = new byte[256];
+                            paqueteRecibido = new DatagramPacket(mensajeEnBytes, 256);
+                            UDP.setSoTimeout(10000);
+
+                            try {
+                                UDP.receive(paqueteRecibido);
+                                mensaje = new String(mensajeEnBytes).trim();
+                                Paquetes.add(paqueteRecibido);
+                                Mensajes.add(mensaje);
+                                padre.print("Reenviando posicion del cliente " + mensaje);
+                            } catch (SocketTimeoutException e) {
+                            } catch (IOException ex) {
+                                Logger.getLogger(HiloServidor.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+
+                        }
+                    }
+                    //Si ya ha recibido un mensaje previamete ya tiene datos
+                    paqueteRecibido = Paquetes.get(contador);
+                    mensaje = Mensajes.get(contador);
+                    puertoDestino = paqueteRecibido.getPort();
+                    IP = paqueteRecibido.getAddress();
+                    idClienteRecibido = procesarMensaje(mensaje, 1);
+                    grupoClienteRecibido = procesarMensaje(mensaje, 2);
+
+                    if (contador == 0) {
+                        for (int c = 0; 0 < Paquetes.size(); c++) {
+                            idClienteEnviar = procesarMensaje(Mensajes.get(i), 1);
+                            //Enviar a todos el mensaje
+                            for (int m = 0; m < Mensajes.size(); m++) {
+                                idEnviar = procesarMensaje(Mensajes.get(m), 1);
+                                if (procesarMensaje(Mensajes.get(m), 2) == grupoClienteRecibido) {
+                                    if (idEnviar != idClienteEnviar) {
+                                        mensajeEnBytes = Paquetes.get(c).getData();
+                                        paqueteEnvio = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, Paquetes.get(m).getAddress(), Paquetes.get(m).getPort());
+                                        UDP.send(paqueteEnvio);
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
+                    //Recibir Respuestas
+                    int contadorAux = 0;
+                    mensajeEnBytes = new byte[256];
+                    paqueteRecibido = new DatagramPacket(mensajeEnBytes, 256);
+                    UDP.setSoTimeout(2000);
+                    while (contadorAux < tamanoGrupos - 1) {
+
+                        contadorAux++;
+                        try {
+                            UDP.receive(paqueteRecibido);
+                            paqueteEnvio = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, IP, puertoDestino);
+                            UDP.send(paqueteEnvio);
+                        } catch (SocketTimeoutException e) {
+                            System.err.println(e.getMessage());
+                        }
+                    }
+
+                    contador++;
+                }//Fin While
+            }
+            for (int i = 0; i < cantidadClientes; i++) {
+                recibirTiempos();
+            }
+
+            TCP.close();
+            UDP.close();
+
+            calcularTiempos();
+        } catch (IOException ex) {
+            Logger.getLogger(HiloServidor.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    void recibirTiempos() 
+    {
+        String mensaje;
+        Long tiempo;
+        int grupo;
+        byte[] mensajeEnBytes = new byte[256];
+        DatagramPacket resp_paquete = new DatagramPacket(mensajeEnBytes, 256);
+
+        try {
+            UDP.setSoTimeout(10000);
+            try {
+                UDP.receive(resp_paquete);
+            } catch (SocketTimeoutException e) {
+                System.err.println(e.getMessage());
+            }
+            mensaje = new String(mensajeEnBytes).trim();
+            if (mensaje.contains(".")) { //Solo usamos longs en estos mensajes
+                grupo = procesarMensaje(mensaje,2);
+                tiempo=procesarMensajeLon(mensaje,3);
+                Latencias.get(grupo).add(tiempo);
+            } 
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+    }
+
+    void calcularTiempos() {
+        float latencia_media;
+
+        for (int i = 0; i < Latencias.size(); i++) {
+            latencia_media = 0;
+            for (int j = 0; j < Latencias.get(i).size(); j++) {
+                latencia_media += Latencias.get(i).get(j);
+            }
+
+            latencia_media = latencia_media/1000;
+
+            padre.print("Latencia medio del grupo " + i + " = " + latencia_media + " s");
+        }
+    }
+    
+    private int procesarMensaje(String Mensaje, int c)
+    {
+        String num = "";
+        int aux = 0;
+        for (int i = 0; i < Mensaje.length(); i++) {
+            if (Mensaje.charAt(i) == '/') {
+                aux++;
+                if (aux == c) {
+                    return Integer.parseInt(num);
+                } else {
+                    num = "";
+                }
+            } else {
+                num = num + Mensaje.charAt(i);
+            }
+        }
+        return -1;
+    }
+
+    private Long procesarMensajeLon(String Mensaje, int c)
+    {
+        String nombre="";
+        int aux=1;
+        for (int i = 0; i < Mensaje.length(); i++) {
+            if (Mensaje.charAt(i) == '/') {
+                if(aux==c)
+                {
+                    return Long.parseLong(nombre);
+                }
+                else
+                {
+                    nombre="";
+                    aux++;
+                }
+            } else {
+                nombre = nombre + Mensaje.charAt(i);
+            }
+        }
+        return 0l;
+    }
+
+    
+
+    
+    
 }
