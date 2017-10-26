@@ -3,16 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package axc.g1l3.Cliente;
+package axc.g1l3.cliente;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
+import java.net.InetAddress;
 import javax.swing.Timer;
 
 /**
@@ -21,18 +16,15 @@ import javax.swing.Timer;
  */
 public class Ventana extends javax.swing.JFrame
 {
-    Clientes clientes;
-    private Vector comboBoxItems;
-    private DefaultComboBoxModel model;
+    Cliente clientes;
     /**
      * Creates new form Ventana
+     * @param ip
      */
-    public Ventana()
+    public Ventana(String ip)
     {
         initComponents();
-        clientes=new Clientes();
-        comboBoxItems = new Vector();
-        model = new DefaultComboBoxModel(comboBoxItems);
+        clientes=new Cliente(this,ip);
         timer.start();
     }
 
@@ -137,23 +129,19 @@ public class Ventana extends javax.swing.JFrame
 
     private void BotonSalirActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_BotonSalirActionPerformed
     {//GEN-HEADEREND:event_BotonSalirActionPerformed
-        if(clientes.finalizado())
             System.exit(0);
     }//GEN-LAST:event_BotonSalirActionPerformed
 
     
-    public void actualizarPosiciones(ArrayList<Vecino> vecinos)
+    public void actualizarPosiciones(String info)
     {
-        if(vecinos==null)
+        if(info.equals(""))
         {
-            textAreaInfo.setText("Sala no existente");
+            textAreaInfo.setText("Hilo no existente");
         }
         else
         {
-        String cadena= "";
-        for(int i=0;i<vecinos.size();i++)
-            cadena=cadena+vecinos.get(i).toString()+"\n";
-        textAreaInfo.setText(cadena);
+        textAreaInfo.setText(info);
         }
     }
     
@@ -161,13 +149,7 @@ public class Ventana extends javax.swing.JFrame
 { 
     public void actionPerformed(ActionEvent e) 
     { 
-        //try{
-        actualizarPosiciones(clientes.getVecinos((Integer)SpinnerHilo.getValue()));
-        
-        /*}
-        catch(Exception err){
-        System.out.println("DEBUG: "+err);
-        }*/
+        actualizarPosiciones(clientes.getInfo((Integer)SpinnerHilo.getValue()));
      } 
 }); 
     
@@ -204,7 +186,7 @@ public class Ventana extends javax.swing.JFrame
         {
             public void run()
             {
-                new Ventana().setVisible(true);
+                new Ventana(ip).setVisible(true);
             }
         });
     }
@@ -219,4 +201,15 @@ public class Ventana extends javax.swing.JFrame
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea textAreaInfo;
     // End of variables declaration//GEN-END:variables
+    static private String ip;
+    
+    void QuitarTexto()
+    {
+        textAreaInfo.setText("");
+    }
+
+    void AnadirTexto(String mensaje)
+    {
+        textAreaInfo.setText(textAreaInfo.getText()+mensaje);
+    }
 }

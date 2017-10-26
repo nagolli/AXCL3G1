@@ -32,18 +32,23 @@ public class Servidor
     
     public void LanzarPrueba()
     {
-        hilo.start();
+            hilo.start();
     }
 
     void PrintIteracion(int i)
     {
         vista.SetIteraciones(i);
-        vista.print("--------------------------------------------------------");
+        vista.print("--------------------------------------------------------\n");
     }
 
     void print(String string)
     {
         vista.print(string);
+    }
+
+    void clienteMas(int i)
+    {
+        vista.SetClientes(i);
     }
     
 

@@ -19,7 +19,7 @@ public class AXCG1L3Servidor
      */
     public static void main(String[] args) throws FileNotFoundException
     {
-        Ventana ventanaInicial=new Ventana(100,10,5); //Argumento: Maximo clientes en una sala, Temas
+        Ventana ventanaInicial=new Ventana(10,10,5); //Argumento: Maximo clientes en una sala, Temas
     }
     
 }

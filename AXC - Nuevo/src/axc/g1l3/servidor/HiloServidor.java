@@ -44,69 +44,75 @@ public class HiloServidor extends Thread
         this.padre = padre;
     }
 
-    public void AceptarConexiones(){
+    public void AceptarConexiones()
+    {
         int conexiones = 0, grupo = 0;
         try {
+
             TCP = new ServerSocket(puertoServidor);
             Clientes.add(new ArrayList<>(tamanoGrupos));
             Latencias.add(new ArrayList<>(tamanoGrupos));
-            System.out.println("Esperando conexion de clientes...");
+            System.out.println(TCP.getInetAddress() + ":" + TCP.getLocalPort());
             while (conexiones < cantidadClientes) {
                 Socket socket_conexion = TCP.accept();
                 Clientes.get(grupo).add(socket_conexion);
                 conexiones++;
+                padre.clienteMas(conexiones);
 
-                if (conexiones % tamanoGrupos == 0 && conexiones != cantidadClientes) 
-                {
+                if (conexiones % tamanoGrupos == 0 && conexiones != cantidadClientes) {
                     grupo++;
                     Clientes.add(new ArrayList<>(tamanoGrupos));
                     Latencias.add(new ArrayList<>(tamanoGrupos));
                 }
-
+                Thread.sleep(5);
             }
         } catch (IOException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
+            System.out.println("Error " + e);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(HiloServidor.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Error");
         }
     }
-    
+
     private void ComienzoComunicacion()
     {
         //TCP
-            /*
+        /*
             enviar_datos = new DataOutputStream(cliente.getOutputStream());
             recibir_datos = new DataInputStream(cliente.getInputStream());
             enviar_datos.writeUTF(mensaje_enviado);
             enviar_datos.flush();
             mensaje=recibir_datos.readUTF();
-             */
+         */
         int i, j;
-        DataOutputStream enviar_datos=null;
+        DataOutputStream enviar_datos = null;
+        System.out.println("Inicio Envio Inicios");
         try {
             Socket destino;
             for (i = 0; i < Clientes.size(); i++) {
                 for (j = 0; j < Clientes.get(i).size(); j++) {
                     destino = (Socket) Clientes.get(i).get(j);
                     enviar_datos = new DataOutputStream(destino.getOutputStream());
-                    enviar_datos.writeUTF((i * tamanoGrupos + j) + "/" + Clientes.get(i).size()+ "/");
+                    enviar_datos.writeUTF((i * tamanoGrupos + j) + "/" + i + "/" + Clientes.get(i).size() + "/" + String.valueOf(iteraciones) + "/");
+                    //                            ID               grupo        clientes en su grupo                  Iteraciones
                     enviar_datos.flush();
                 }
-                System.out.println("Comunicacion iniciada con el grupo " + i + " que tiene " + j + " clientes");
             }
             enviar_datos.close();
+            System.out.println("Fin envio Inicios");
         } catch (IOException e) {
             System.err.println(e.getMessage());
             System.exit(1);
         }
     }
-    
+
     @Override
     public void run()
     {
+        System.out.println("Comienzo Run");
         String mensaje;
         int puertoDestino;
         int grupoClienteRecibido;
-        int idClienteRecibido;
         int idClienteEnviar;
         InetAddress IP;
         DatagramPacket paqueteRecibido;
@@ -122,11 +128,11 @@ public class HiloServidor extends Thread
             ComienzoComunicacion();
 
             for (int i = 0; i < iteraciones; i++) {
-                padre.PrintIteracion(i+1);
+                padre.PrintIteracion(i + 1);
                 contador = 0;
                 Paquetes = new ArrayList();
                 Mensajes = new ArrayList();
-                while (contador <= cantidadClientes) {
+                while (contador < cantidadClientes) {
                     if (contador == 0) {    //Recibir primer mensaje
                         for (int c = 0; c < cantidadClientes; c++) {
                             mensajeEnBytes = new byte[256];
@@ -138,7 +144,7 @@ public class HiloServidor extends Thread
                                 mensaje = new String(mensajeEnBytes).trim();
                                 Paquetes.add(paqueteRecibido);
                                 Mensajes.add(mensaje);
-                                padre.print("Reenviando posicion del cliente " + mensaje);
+                                padre.print("Reenviando posicion del cliente " + mensaje+"\n");
                             } catch (SocketTimeoutException e) {
                             } catch (IOException ex) {
                                 Logger.getLogger(HiloServidor.class.getName()).log(Level.SEVERE, null, ex);
@@ -147,15 +153,16 @@ public class HiloServidor extends Thread
                         }
                     }
                     //Si ya ha recibido un mensaje previamete ya tiene datos
+                    System.out.println("Paquetes: "+Paquetes.size());
+                    System.out.println("contador "+contador);
                     paqueteRecibido = Paquetes.get(contador);
                     mensaje = Mensajes.get(contador);
                     puertoDestino = paqueteRecibido.getPort();
                     IP = paqueteRecibido.getAddress();
-                    idClienteRecibido = procesarMensaje(mensaje, 1);
                     grupoClienteRecibido = procesarMensaje(mensaje, 2);
 
                     if (contador == 0) {
-                        for (int c = 0; 0 < Paquetes.size(); c++) {
+                        for (int c = 0; c < Paquetes.size(); c++) {
                             idClienteEnviar = procesarMensaje(Mensajes.get(i), 1);
                             //Enviar a todos el mensaje
                             for (int m = 0; m < Mensajes.size(); m++) {
@@ -204,8 +211,8 @@ public class HiloServidor extends Thread
             Logger.getLogger(HiloServidor.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    void recibirTiempos() 
+
+    void recibirTiempos()
     {
         String mensaje;
         Long tiempo;
@@ -222,17 +229,18 @@ public class HiloServidor extends Thread
             }
             mensaje = new String(mensajeEnBytes).trim();
             if (mensaje.contains(".")) { //Solo usamos longs en estos mensajes
-                grupo = procesarMensaje(mensaje,2);
-                tiempo=procesarMensajeLon(mensaje,3);
+                grupo = procesarMensaje(mensaje, 2);
+                tiempo = procesarMensajeLon(mensaje, 3);
                 Latencias.get(grupo).add(tiempo);
-            } 
+            }
         } catch (IOException e) {
             System.err.println(e.getMessage());
             System.exit(1);
         }
     }
 
-    void calcularTiempos() {
+    void calcularTiempos()
+    {
         float latencia_media;
 
         for (int i = 0; i < Latencias.size(); i++) {
@@ -241,12 +249,12 @@ public class HiloServidor extends Thread
                 latencia_media += Latencias.get(i).get(j);
             }
 
-            latencia_media = latencia_media/1000;
+            latencia_media = latencia_media / 1000;
 
-            padre.print("Latencia medio del grupo " + i + " = " + latencia_media + " s");
+            padre.print("Latencia medio del grupo " + i + " = " + latencia_media + " s\n");
         }
     }
-    
+
     private int procesarMensaje(String Mensaje, int c)
     {
         String num = "";
@@ -268,17 +276,14 @@ public class HiloServidor extends Thread
 
     private Long procesarMensajeLon(String Mensaje, int c)
     {
-        String nombre="";
-        int aux=1;
+        String nombre = "";
+        int aux = 1;
         for (int i = 0; i < Mensaje.length(); i++) {
             if (Mensaje.charAt(i) == '/') {
-                if(aux==c)
-                {
+                if (aux == c) {
                     return Long.parseLong(nombre);
-                }
-                else
-                {
-                    nombre="";
+                } else {
+                    nombre = "";
                     aux++;
                 }
             } else {
@@ -288,8 +293,4 @@ public class HiloServidor extends Thread
         return 0l;
     }
 
-    
-
-    
-    
 }

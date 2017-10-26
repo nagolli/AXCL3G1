@@ -3,7 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package axc.g1l3.Cliente;
+package axc.g1l3.cliente;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -11,15 +16,14 @@ package axc.g1l3.Cliente;
  */
 public class AXCG1L3Cliente
 {
-    
-    
-    
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args)
     {
-        Ventana ventanaInicial=new Ventana(); 
+        String ip = "localhost";
+        
+        Ventana ventanaInicial=new Ventana(ip);
         ventanaInicial.setVisible(true);
     }
     
