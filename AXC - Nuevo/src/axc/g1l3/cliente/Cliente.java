@@ -8,6 +8,7 @@ package axc.g1l3.cliente;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.concurrent.CyclicBarrier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,7 +23,8 @@ public class Cliente
     private InetAddress ip;
     private int port;
     Ventana padre;
-
+    CyclicBarrier barrera;
+    
     Cliente(Ventana padre, String ip)
     {
         clientes = new ArrayList<>();
@@ -33,6 +35,8 @@ public class Cliente
             Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
         }
         port = 1993;
+        
+        barrera = new CyclicBarrier(10);
     }
 
     void lanzar(int aux)
@@ -41,7 +45,7 @@ public class Cliente
             
             for (int i = 0; i < aux; i++) {
                 System.out.println(ip+":"+port);
-                HiloCliente hilo = new HiloCliente(ip, port,this);
+                HiloCliente hilo = new HiloCliente(ip, port,this,barrera);
                 clientes.add(hilo);
                 hilo.start();
             }

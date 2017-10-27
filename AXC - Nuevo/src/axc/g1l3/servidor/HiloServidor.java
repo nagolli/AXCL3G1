@@ -142,9 +142,11 @@ public class HiloServidor extends Thread
                             try {
                                 UDP.receive(paqueteRecibido);
                                 mensaje = new String(mensajeEnBytes).trim();
+                                if (mensaje != null) { 
                                 Paquetes.add(paqueteRecibido);
                                 Mensajes.add(mensaje);
-                                padre.print("Reenviando posicion del cliente " + mensaje+"\n");
+                                }
+                                padre.print("Reenviando posicion del cliente " + mensaje + "\n");
                             } catch (SocketTimeoutException e) {
                             } catch (IOException ex) {
                                 Logger.getLogger(HiloServidor.class.getName()).log(Level.SEVERE, null, ex);
@@ -153,8 +155,8 @@ public class HiloServidor extends Thread
                         }
                     }
                     //Si ya ha recibido un mensaje previamete ya tiene datos
-                    System.out.println("Paquetes: "+Paquetes.size());
-                    System.out.println("contador "+contador);
+                    System.out.println("Paquetes: " + Paquetes.size());
+                    System.out.println("contador " + contador);
                     paqueteRecibido = Paquetes.get(contador);
                     mensaje = Mensajes.get(contador);
                     puertoDestino = paqueteRecibido.getPort();
@@ -198,7 +200,13 @@ public class HiloServidor extends Thread
 
                     contador++;
                 }//Fin While
+                try {
+                    sleep(1000);
+                } catch (InterruptedException ex) {
+                }
+
             }
+            System.out.println("Recibiendo Tiempos");
             for (int i = 0; i < cantidadClientes; i++) {
                 recibirTiempos();
             }
@@ -212,7 +220,7 @@ public class HiloServidor extends Thread
         }
     }
 
-    void recibirTiempos()
+    boolean recibirTiempos()
     {
         String mensaje;
         Long tiempo;
@@ -228,15 +236,23 @@ public class HiloServidor extends Thread
                 System.err.println(e.getMessage());
             }
             mensaje = new String(mensajeEnBytes).trim();
-            if (mensaje.contains(".")) { //Solo usamos longs en estos mensajes
+            if (procesarMensaje(mensaje, 3)!=-1 && procesarMensaje(mensaje, 4)==-1){
                 grupo = procesarMensaje(mensaje, 2);
                 tiempo = procesarMensajeLon(mensaje, 3);
+                System.out.println("Latencia recibida: "+tiempo);
                 Latencias.get(grupo).add(tiempo);
+                return true;
+            }
+            else
+            {
+                System.out.println("Mensaje no reconocido como latencia: "+mensaje);
+                return false;
             }
         } catch (IOException e) {
             System.err.println(e.getMessage());
             System.exit(1);
         }
+        return false;
     }
 
     void calcularTiempos()

@@ -5,6 +5,8 @@
  */
 package axc.g1l3.servidor;
 
+import java.util.concurrent.CyclicBarrier;
+
 /**
  *
  * @author Ignacio
@@ -28,6 +30,7 @@ public class Servidor
         hilo = new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this);
         hilo.AceptarConexiones();
         vista.Lanzar();
+
     }
     
     public void LanzarPrueba()

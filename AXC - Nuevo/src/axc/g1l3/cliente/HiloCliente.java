@@ -14,6 +14,10 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -38,8 +42,9 @@ public class HiloCliente extends Thread
     ArrayList<ArrayList<Integer>> Posiciones;
     private Cliente padre;
     private int iteracion;
+    CyclicBarrier barrera;
 
-    public HiloCliente(InetAddress ip, int puerto, Cliente padre)
+    public HiloCliente(InetAddress ip, int puerto, Cliente padre,CyclicBarrier barrera)
     {
         this.puerto = puerto;
         this.ip = ip;
@@ -47,6 +52,7 @@ public class HiloCliente extends Thread
         this.padre = padre;
         Posiciones = new ArrayList();
         iteracion = -1;
+        this.barrera=barrera;
     }
 
     public void run()
@@ -88,6 +94,16 @@ public class HiloCliente extends Thread
         }
 
         for (iteracion = 0; iteracion < iteraciones; iteracion++) {
+            //Sincronizador de hilos de este cliente
+            try {
+                barrera.await();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(HiloCliente.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (BrokenBarrierException ex) {
+                Logger.getLogger(HiloCliente.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            System.out.println(id+" comienza iteracion "+(iteracion+1));
             iniTime = System.currentTimeMillis();
             //ENVIAR COORDENADAS
             try {
@@ -97,6 +113,7 @@ public class HiloCliente extends Thread
                 paqueteEnviar = new DatagramPacket(mensajeEnBytes, mensaje.length(), ip, puerto);
 
                 UDP.send(paqueteEnviar);
+                System.out.println(id+" mensaje enviado ");
             } catch (IOException e) {
             }
             //RECIBIR COORDENADAS
@@ -112,18 +129,19 @@ public class HiloCliente extends Thread
                         mensaje = new String(mensajeEnBytes).trim();
                         xRec = procesarMensaje(mensaje, 3);
                         yRec = procesarMensaje(mensaje, 4);
-                        if (yRec != -1) {
+                        if (yRec != -1&& xRec !=-1) {
 
                             anadirPosicion(procesarMensaje(mensaje, 1), xRec, yRec);
                             IPS.add(paqueteRecibido.getAddress());
                         }
+                        System.out.println(id+" mensaje recibido de "+procesarMensaje(mensaje, 1)+" llevo "+cont);
                     } catch (SocketTimeoutException e) {
                     }
 
                 } catch (IOException ex) {
                 }
             }
-
+            System.out.println(id+" enviando confirmaciones");
             for (int ips = 0; ips < IPS.size(); ips++) {
                 try {
                     ipEnviar = IPS.get(ips);
@@ -135,8 +153,9 @@ public class HiloCliente extends Thread
                 } catch (IOException ex) {
                 }
             }
-
-            //ENVIAR CONFIRMACIONES
+            
+            System.out.println(id+" esperando confirmaciones");
+            //RECIBIENDO CONFIRMACIONES
             cont = 0;
             try {
                 UDP.setSoTimeout(10000);
@@ -155,13 +174,16 @@ public class HiloCliente extends Thread
             } catch (IOException e) {
             }
             finTime = System.currentTimeMillis();
+            System.out.println("Latencia: "+(finTime - iniTime)+" en id "+id);
             total += (finTime - iniTime);
             Mover();
-
+            System.out.println(id+" fin iteracion");
             try {
-                sleep(10);
+                sleep(10000);
             } catch (InterruptedException ex) {
             }
+            
+            
         }
         enviarLatencias();
         UDP.close();
@@ -180,18 +202,27 @@ public class HiloCliente extends Thread
 
     private void enviarLatencias()
     {
+        //Sincronizador de hilos de este cliente
+            try {
+                barrera.await();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(HiloCliente.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (BrokenBarrierException ex) {
+                Logger.getLogger(HiloCliente.class.getName()).log(Level.SEVERE, null, ex);
+            }
         byte[] mensajeEnBytes;
         DatagramPacket paqueteEnviar;
         String mensaje;
 
         media = total / iteraciones;
-
+        System.out.println("Latencia media: "+media+" en id "+id);
         try {
             mensaje = id + "/" + numGrupo + "/" + media + "/";
 
             mensajeEnBytes = mensaje.getBytes();
             paqueteEnviar = new DatagramPacket(mensajeEnBytes, mensaje.length(), ip, puerto);
             UDP.send(paqueteEnviar);
+            System.out.println("Latencia enviadas "+id);
         } catch (IOException ex) {
         }
     }
@@ -240,7 +271,12 @@ public class HiloCliente extends Thread
             if (Mensaje.charAt(i) == '/') {
                 aux++;
                 if (aux == c) {
+                    try{
                     return Integer.parseInt(num);
+                    }
+                    catch(Exception e){
+                    return -1;
+                    }
                 } else {
                     num = "";
                 }
@@ -251,10 +287,10 @@ public class HiloCliente extends Thread
         return -1;
     }
 
-    private void anadirPosicion(int idRec, int x, int y)
+    private void anadirPosicion(int idRec, int X, int Y)
     {
-        Posiciones.get(idRec % tamGrupo).set(0, x);
-        Posiciones.get(idRec % tamGrupo).set(1, y);
+        Posiciones.get(idRec % tamGrupo).set(0, X);
+        Posiciones.get(idRec % tamGrupo).set(1, Y);
     }
 
     @Override
