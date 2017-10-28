@@ -5,7 +5,13 @@
  */
 package axc.g1l3.servidor;
 
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.concurrent.CyclicBarrier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -20,6 +26,9 @@ public class Servidor
     private HiloServidor hilo;
     private final int puerto=1993;
     private Ventana vista;
+    ArrayList<DatagramPacket> Paquetes;
+    ArrayList<String> Mensajes;
+    DatagramSocket UDP;
 
     public Servidor(int cantidadClientes, int tamanoGrupos, int iteraciones, Ventana vista)
     {
@@ -27,7 +36,14 @@ public class Servidor
         this.tamanoGrupos = tamanoGrupos;
         this.iteraciones = iteraciones;
         this.vista=vista;
-        hilo = new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this);
+        Paquetes = new ArrayList();
+        Mensajes = new ArrayList();
+        try {
+            UDP = new DatagramSocket(1993);
+        } catch (SocketException ex) {
+            Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        hilo = new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP);
         hilo.AceptarConexiones();
         vista.Lanzar();
 

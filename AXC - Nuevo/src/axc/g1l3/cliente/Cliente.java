@@ -25,7 +25,7 @@ public class Cliente
     Ventana padre;
     CyclicBarrier barrera;
     
-    Cliente(Ventana padre, String ip)
+    Cliente(Ventana padre, String ip, int numCli)
     {
         clientes = new ArrayList<>();
         this.padre = padre;
@@ -36,7 +36,7 @@ public class Cliente
         }
         port = 1993;
         
-        barrera = new CyclicBarrier(50);
+        barrera = new CyclicBarrier(numCli);
     }
 
     void lanzar(int aux)

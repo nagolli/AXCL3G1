@@ -8,6 +8,7 @@ package axc.g1l3.cliente;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.InetAddress;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.Timer;
 
 /**
@@ -21,10 +22,10 @@ public class Ventana extends javax.swing.JFrame
      * Creates new form Ventana
      * @param ip
      */
-    public Ventana(String ip)
+    public Ventana(String ip,int numCli)
     {
         initComponents();
-        clientes=new Cliente(this,ip);
+        clientes=new Cliente(this,ip,numCli);
         timer.start();
     }
 
@@ -39,7 +40,7 @@ public class Ventana extends javax.swing.JFrame
     {
 
         BotonAnadir = new javax.swing.JButton();
-        Spinner = new javax.swing.JSpinner();
+        Spinner = new javax.swing.JSpinner(new SpinnerNumberModel(1,1,100,1));
         BotonSalir = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         textAreaInfo = new javax.swing.JTextArea();
@@ -186,7 +187,7 @@ public class Ventana extends javax.swing.JFrame
         {
             public void run()
             {
-                new Ventana(ip).setVisible(true);
+                new Ventana(ip,numCli).setVisible(true);
             }
         });
     }
@@ -202,6 +203,7 @@ public class Ventana extends javax.swing.JFrame
     private javax.swing.JTextArea textAreaInfo;
     // End of variables declaration//GEN-END:variables
     static private String ip;
+    static private int numCli;
     
     void QuitarTexto()
     {

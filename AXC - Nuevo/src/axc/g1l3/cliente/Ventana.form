@@ -81,6 +81,9 @@
       </Events>
     </Component>
     <Component class="javax.swing.JSpinner" name="Spinner">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JSpinner(new SpinnerNumberModel(1,1,100,1))"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JButton" name="BotonSalir">
       <Properties>

@@ -22,8 +22,9 @@ public class AXCG1L3Cliente
     public static void main(String[] args)
     {
         String ip = "localhost";
+       
         
-        Ventana ventanaInicial=new Ventana(ip);
+        Ventana ventanaInicial=new Ventana(ip, 6); //Argumento: Numero de clientes
         ventanaInicial.setVisible(true);
     }
     
