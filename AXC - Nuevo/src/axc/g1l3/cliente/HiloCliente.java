@@ -66,7 +66,7 @@ public class HiloCliente extends Thread
         try {
             if (conectar()) {
                 //Configuracion por TCP
-                System.out.println("Conectado y configurando");
+                //System.out.println("Conectado y configurando");
                 recibir_datos = new DataInputStream(TCP.getInputStream());
                 mensaje = recibir_datos.readUTF();
                 id = procesarMensaje(mensaje, 1);
@@ -86,72 +86,73 @@ public class HiloCliente extends Thread
                 }
                 NuevaPosicion();
                 Mover();
-                System.out.println("Configurado" + iteraciones);
+                //System.out.println("Configurado" + iteraciones);
+
+                for (iteracion = 0; iteracion < iteraciones; iteracion++) {
+                    //Sincronizador de hilos de este cliente
+                    contador = 0;
+                    try {
+                        barrera.await();
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(HiloCliente.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (BrokenBarrierException ex) {
+                        Logger.getLogger(HiloCliente.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                    //System.out.println("Sale de barrera");
+                    //System.out.println(id + " comienza iteracion " + (iteracion + 1));
+                    iniTime = System.currentTimeMillis();
+
+                    //ENVIAR COORDENADAS
+                    try {
+                        mensaje = 1 + "/" + id + "/" + numGrupo + "/" + x + "/" + y + "/";
+                        mensajeEnBytes = mensaje.getBytes();
+                        paqueteEnviar = new DatagramPacket(mensajeEnBytes, mensaje.length(), ip, puerto);
+
+                        UDP.send(paqueteEnviar);
+                        //System.out.println(id + " mensaje enviado ");
+                    } catch (IOException e) {
+                        //System.out.println("DEBUG: "+e);
+                    }
+
+                    for (int i = 0; i < (tamGrupo - 1) * 2; i++) {
+                        //System.out.println(id+"Esperando mensaje: ");
+                        if(id==1)System.out.println("Bucle UDP "+i+((tamGrupo-1)*2));
+                        try {
+                            UDP.setSoTimeout(15000);
+                        } catch (SocketException ex) {
+                            //System.out.println(id+"SOCKET EXCEPTION: ");
+                        }
+                        mensajeEnBytes = new byte[256];
+                        paqueteRecibido = new DatagramPacket(mensajeEnBytes, 256);
+                        try {
+                            UDP.receive(paqueteRecibido);
+                            mensaje = new String(mensajeEnBytes).trim();
+                            //System.out.println(id + " mensaje recibido ");
+                            switch (procesarMensaje(mensaje, 1)) {
+                                case 1:
+                                    //if(id==1)System.out.println("Recibe coordenada "+mensaje);
+                                    RecibirCoordenada(mensaje, paqueteRecibido);
+                                    break;
+                                case 2:
+                                    //if(id==1)System.out.println("Recibe confirmacion");
+                                    RecibirConfirmacion();
+                                    break;
+                            }
+                        } catch (Exception e) {
+                            //System.out.println(id+"Mensaje no llegado: ");
+                            i--;
+                        }
+                    }
+
+                }
+                if(id==1)System.out.println("Fin iteraciones");
+                enviarLatencias();
+                UDP.close();
             }
         } catch (IOException ex) {
             System.out.println("DEBUG: " + ex);
         }
-
-        for (iteracion = 0; iteracion < iteraciones; iteracion++) {
-            //Sincronizador de hilos de este cliente
-            contador = 0;
-            try {
-                barrera.await();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(HiloCliente.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (BrokenBarrierException ex) {
-                Logger.getLogger(HiloCliente.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            System.out.println("Sale de barrera");
-            System.out.println(id + " comienza iteracion " + (iteracion + 1));
-            iniTime = System.currentTimeMillis();
-            
-            
-            //ENVIAR COORDENADAS
-            try {
-                mensaje = 1 + "/" + id + "/" + numGrupo + "/" + x + "/" + y + "/";
-                mensajeEnBytes = mensaje.getBytes();
-                paqueteEnviar = new DatagramPacket(mensajeEnBytes, mensaje.length(), ip, puerto);
-
-                UDP.send(paqueteEnviar);
-                System.out.println(id + " mensaje enviado ");
-            } catch (IOException e) {
-                System.out.println("DEBUG: "+e);
-            }
-
-            
-            for (int i = 0; i < (tamGrupo - 1) * 2; i++) {
-                System.out.println(id+"Esperando mensaje: ");
-                try {
-                    UDP.setSoTimeout(15000);
-                } catch (SocketException ex) { 
-                System.out.println(id+"SOCKET EXCEPTION: ");
-                }
-                mensajeEnBytes = new byte[256];
-                paqueteRecibido = new DatagramPacket(mensajeEnBytes, 256);
-                try {
-                    UDP.receive(paqueteRecibido);
-                    mensaje = new String(mensajeEnBytes).trim();
-                    System.out.println(id + " mensaje recibido ");
-                    switch (procesarMensaje(mensaje, 1)) {
-                        case 1:
-                            RecibirCoordenada(mensaje,paqueteRecibido);
-                            break;
-                        case 2:
-                            RecibirConfirmacion();
-                            break;
-                    }
-                } catch (Exception e) {
-                    System.out.println(id+"Mensaje no llegado: ");
-                    i--;
-                }
-            }
-
-        }
-        System.out.println("Fin iteraciones");
-        enviarLatencias();
-        UDP.close();
     }
 
     private boolean conectar()
@@ -174,33 +175,36 @@ public class HiloCliente extends Thread
         int yRec = procesarMensaje(mensaje, 5);
 
         anadirPosicion(procesarMensaje(mensaje, 2), xRec, yRec);
-        InetAddress ipRec = paqueteRecibido.getAddress();
 
-        System.out.println(id + " recibe coordenada de "+procesarMensaje(mensaje, 2));
-        
-        mensaje = 2 + "/" + id + "/" + numGrupo + "/";
+        if(id==1)System.out.println(id + " recibe coordenada de "+procesarMensaje(mensaje, 2));
+        mensaje = 2 + "/" + id + "/" + numGrupo + "/" + procesarMensaje(mensaje, 2) +"/";
         byte[] mensajeEnBytes = mensaje.getBytes();
-        DatagramPacket paqueteEnviar = new DatagramPacket(mensajeEnBytes, mensaje.length(), ipRec, puerto);
+        DatagramPacket paqueteEnviar = new DatagramPacket(mensajeEnBytes, mensaje.length(), ip, puerto);
 
         UDP.send(paqueteEnviar);
-        System.out.println(id + " envia confirmacion "+mensaje);
+        if(id==1)System.out.println(id + " envia confirmacion "+mensaje);
     }
 
     private boolean RecibirConfirmacion()
     {
-        System.out.println(id + "Recibe confirmacion, lleva"+contador);
+        if(id==1)System.out.println(id + "Recibe confirmacion, lleva" + contador);
         if (contador < tamGrupo - 1) {
+            if(id==1)System.out.println("Aumenta contador");
             contador++;
         }
         if (contador < tamGrupo - 1) {
+            if(id==1)System.out.println("Como contador es menor que "+(tamGrupo-1)+"No hace nada");
             return false;
         }
-
+        if(id==1)System.out.println("Como contador es igual que "+(tamGrupo-1));
+        if(id==1)System.out.println("Calculo de latencia");
         finTime = System.currentTimeMillis();
-        System.out.println("Latencia: " + (finTime - iniTime) + " en id " + id);
+        if(id==1)System.out.println(finTime+"-"+iniTime);
+        if(id==1)System.out.println("Latencia: " + (finTime - iniTime) + " en id " + id);
         total += (finTime - iniTime);
+        contador = 0;
         Mover();
-        System.out.println(id + " fin iteracion");
+        if(id==1)System.out.println(id + " fin iteracion");
         return true;
     }
 

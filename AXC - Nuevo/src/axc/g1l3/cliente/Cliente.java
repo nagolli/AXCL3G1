@@ -36,7 +36,7 @@ public class Cliente
         }
         port = 1993;
         
-        barrera = new CyclicBarrier(10);
+        barrera = new CyclicBarrier(50);
     }
 
     void lanzar(int aux)
