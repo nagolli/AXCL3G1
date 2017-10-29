@@ -26,8 +26,8 @@ public class Servidor
     private HiloServidor hilo;
     private final int puerto=1993;
     private Ventana vista;
-    ArrayList<DatagramPacket> Paquetes;
-    ArrayList<String> Mensajes;
+    ArrayList<DatagramPacket> Paquetes,Pendientes;
+    ArrayList<String> Mensajes,MPendientes;
     DatagramSocket UDP;
 
     public Servidor(int cantidadClientes, int tamanoGrupos, int iteraciones, Ventana vista)
@@ -38,12 +38,15 @@ public class Servidor
         this.vista=vista;
         Paquetes = new ArrayList();
         Mensajes = new ArrayList();
+        Pendientes = new ArrayList();
+        MPendientes = new ArrayList();
         try {
             UDP = new DatagramSocket(1993);
         } catch (SocketException ex) {
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
         }
-        hilo = new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP);
+        hilo = new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,true,Pendientes,MPendientes);
+        //Se pueden crear más hilos, pero no aceptan conexiones y el valo booleano debe ser false
         hilo.AceptarConexiones();
         vista.Lanzar();
 
@@ -52,6 +55,7 @@ public class Servidor
     public void LanzarPrueba()
     {
             hilo.start();
+            //Si hay más hilos lanzarlos aqui
     }
 
     void PrintIteracion(int i)

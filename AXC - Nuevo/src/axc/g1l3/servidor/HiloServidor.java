@@ -34,26 +34,28 @@ public class HiloServidor extends Thread
     int latencias;
     ArrayList<DatagramPacket> Paquetes;
     ArrayList<String> Mensajes;
-
+    boolean primero;
     ServerSocket TCP;
     DatagramSocket UDP;
     ArrayList<ArrayList<Socket>> Clientes = new ArrayList<>(cantidadClientes);
     ArrayList<ArrayList<Long>> Latencias = new ArrayList<>(cantidadClientes);
     Servidor padre;
 
-    public HiloServidor(int cantidadClientes, int tamanoGrupos, int iteraciones, int puertoServidor, Servidor padre, ArrayList<DatagramPacket> Paquetes, ArrayList<String> Mensajes, DatagramSocket UDP)
+    public HiloServidor(int cantidadClientes, int tamanoGrupos, int iteraciones, int puertoServidor, Servidor padre, ArrayList<DatagramPacket> Paquetes, ArrayList<String> Mensajes, DatagramSocket UDP, boolean primero,ArrayList<DatagramPacket> Pendientes,ArrayList<String> MPendientes)
     {
         this.cantidadClientes = cantidadClientes;
         this.tamanoGrupos = tamanoGrupos;
         this.iteraciones = iteraciones;
         this.puertoServidor = puertoServidor;
         this.padre = padre;
-        Pendientes = new ArrayList();
-        MPendientes = new ArrayList();
+        this.Pendientes = Pendientes;
+        this.MPendientes = MPendientes;
         latencias = 0;
         this.Mensajes = Mensajes;
         this.Paquetes = Paquetes;
         this.UDP = UDP;
+        this.primero=primero;
+            
     }
 
     public void AceptarConexiones()
@@ -64,7 +66,7 @@ public class HiloServidor extends Thread
             TCP = new ServerSocket(puertoServidor);
             Clientes.add(new ArrayList<>(tamanoGrupos));
             Latencias.add(new ArrayList<>(tamanoGrupos));
-            System.out.println(TCP.getInetAddress() + ":" + TCP.getLocalPort());
+            //System.out.println(TCP.getInetAddress() + ":" + TCP.getLocalPort());
             while (conexiones < cantidadClientes) {
                 Socket socket_conexion = TCP.accept();
                 Clientes.get(grupo).add(socket_conexion);
@@ -99,7 +101,7 @@ public class HiloServidor extends Thread
         int i, j;
         DataOutputStream enviar_datos = null;
         padre.print("Inicio comunicacion.\n");
-        System.out.println("Inicio Envio Inicios");
+        //System.out.println("Inicio Envio Inicios");
         try {
             Socket destino;
             for (i = 0; i < Clientes.size(); i++) {
@@ -113,7 +115,7 @@ public class HiloServidor extends Thread
             }
             enviar_datos.close();
             padre.print("IDs Asignadas.\n");
-            System.out.println("Fin envio Inicios");
+            //System.out.println("Fin envio Inicios");
         } catch (IOException e) {
             System.err.println(e.getMessage());
             System.exit(1);
@@ -123,8 +125,9 @@ public class HiloServidor extends Thread
     @Override
     public void run()
     {
-        System.out.println("Comienzo Run");
-        ComienzoComunicacion();
+        //System.out.println("Comienzo Run");
+        if(primero)
+                ComienzoComunicacion();
 
         while (true) {
             try {
@@ -156,10 +159,10 @@ public class HiloServidor extends Thread
                     case 1:
                         //REENVIAR COORDENADAS
                         if (Paquetes.size() < cantidadClientes) {
-                            System.out.println("Caso 1A");
+                            //System.out.println("Caso 1A");
                             reenviarCoordenadas(false, Paquetes, Mensajes, paqueteRecibido, mensaje);
                         } else {
-                            System.out.println("Caso 1B");
+                            //System.out.println("Caso 1B");
                             reenviarCoordenadas(true, Paquetes, Mensajes, paqueteRecibido, mensaje);
                         }
                         break;
@@ -192,18 +195,18 @@ public class HiloServidor extends Thread
             Paquetes.add(paqueteRecibido);
             Mensajes.add(mensaje);
             if (cantidadClientes - 1 > Pendientes.size()) {
-                System.out.println("Añadido a pendientes" + (Pendientes.size() + 1));
+                //System.out.println("Añadido a pendientes" + (Pendientes.size() + 1));
                 Pendientes.add(paqueteRecibido);
                 MPendientes.add(mensaje);
                 return;
             } else {
-                System.out.println("Enviando Pendientes");
+                //System.out.println("Enviando Pendientes");
                 for (int i = 0; i < cantidadClientes - 1; i++) {
                     reenviarCoordenadas(true, Paquetes, Mensajes, Pendientes.get(i), MPendientes.get(i));
                 }
             }
         }
-        System.out.println("Enviando Mensajes " + cantidadClientes + " " + Mensajes.size());
+        //System.out.println("Enviando Mensajes " + cantidadClientes + " " + Mensajes.size());
         int grupoClienteRecibido = procesarMensaje(mensaje, 3);
         int idClienteEnviar = procesarMensaje(mensaje, 2);
         //Enviar a todos el mensaje
@@ -212,7 +215,7 @@ public class HiloServidor extends Thread
             if (procesarMensaje(Mensajes.get(m), 3) == grupoClienteRecibido) {
                 if (idEnviar != idClienteEnviar) {
                     byte[] mensajeEnBytes = paqueteRecibido.getData();
-                    System.out.println("Enviando: " + mensajeEnBytes + " a " + Paquetes.get(m).getPort());
+                    //System.out.println("Enviando: " + mensajeEnBytes + " a " + Paquetes.get(m).getPort());
                     DatagramPacket paqueteEnvio = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, Paquetes.get(m).getAddress(), Paquetes.get(m).getPort());
                     UDP.send(paqueteEnvio);
                     padre.print("Enviadas coordenadas de "+idClienteEnviar+" a "+idEnviar+".\n");

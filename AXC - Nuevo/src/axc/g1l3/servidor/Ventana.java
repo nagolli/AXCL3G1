@@ -33,6 +33,7 @@ public class Ventana extends javax.swing.JFrame
             TextSalas.setText(String.valueOf((clientes/tamanoGrupos)+1));
         TextClientes.setText("0");
         TextMaximo.setText(String.valueOf(tamanoGrupos));
+        SetIteraciones(iteraciones);
         this.setVisible(true);
         servidor=new Servidor(clientes,tamanoGrupos,iteraciones,this);    //Creación del objeto
     }
@@ -134,7 +135,7 @@ public class Ventana extends javax.swing.JFrame
         });
         getContentPane().add(BotonInicio, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 240, 120, 40));
 
-        jLabel5.setText("Iteración");
+        jLabel5.setText("Iteraciones");
         getContentPane().add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 190, -1, -1));
 
         TextIteracion.setText("0");

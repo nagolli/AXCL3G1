@@ -35,7 +35,7 @@ public class Cliente
             Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
         }
         port = 1993;
-        
+        System.out.println(numCli);
         barrera = new CyclicBarrier(numCli);
     }
 

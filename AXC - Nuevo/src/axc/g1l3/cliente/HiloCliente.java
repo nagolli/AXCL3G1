@@ -117,7 +117,7 @@ public class HiloCliente extends Thread
 
                     for (int i = 0; i < (tamGrupo - 1) * 2; i++) {
                         //System.out.println(id+"Esperando mensaje: ");
-                        if(id==1)System.out.println("Bucle UDP "+i+((tamGrupo-1)*2));
+                        //if(id==1)System.out.println("Bucle UDP "+i+((tamGrupo-1)*2));
                         try {
                             UDP.setSoTimeout(15000);
                         } catch (SocketException ex) {
@@ -146,7 +146,7 @@ public class HiloCliente extends Thread
                     }
 
                 }
-                if(id==1)System.out.println("Fin iteraciones");
+                //System.out.println("Fin iteraciones");
                 enviarLatencias();
                 UDP.close();
             }
@@ -176,35 +176,35 @@ public class HiloCliente extends Thread
 
         anadirPosicion(procesarMensaje(mensaje, 2), xRec, yRec);
 
-        if(id==1)System.out.println(id + " recibe coordenada de "+procesarMensaje(mensaje, 2));
+        //System.out.println(id + " recibe coordenada de "+procesarMensaje(mensaje, 2));
         mensaje = 2 + "/" + id + "/" + numGrupo + "/" + procesarMensaje(mensaje, 2) +"/";
         byte[] mensajeEnBytes = mensaje.getBytes();
         DatagramPacket paqueteEnviar = new DatagramPacket(mensajeEnBytes, mensaje.length(), ip, puerto);
 
         UDP.send(paqueteEnviar);
-        if(id==1)System.out.println(id + " envia confirmacion "+mensaje);
+        //System.out.println(id + " envia confirmacion "+mensaje);
     }
 
     private boolean RecibirConfirmacion()
     {
-        if(id==1)System.out.println(id + "Recibe confirmacion, lleva" + contador);
+        //System.out.println(id + "Recibe confirmacion, lleva" + contador);
         if (contador < tamGrupo - 1) {
-            if(id==1)System.out.println("Aumenta contador");
+            //System.out.println("Aumenta contador");
             contador++;
         }
         if (contador < tamGrupo - 1) {
-            if(id==1)System.out.println("Como contador es menor que "+(tamGrupo-1)+"No hace nada");
+            //System.out.println("Como contador es menor que "+(tamGrupo-1)+"No hace nada");
             return false;
         }
-        if(id==1)System.out.println("Como contador es igual que "+(tamGrupo-1));
-        if(id==1)System.out.println("Calculo de latencia");
+        //System.out.println("Como contador es igual que "+(tamGrupo-1));
+        //System.out.println("Calculo de latencia");
         finTime = System.currentTimeMillis();
-        if(id==1)System.out.println(finTime+"-"+iniTime);
-        if(id==1)System.out.println("Latencia: " + (finTime - iniTime) + " en id " + id);
+        //System.out.println(finTime+"-"+iniTime);
+        //System.out.println("Latencia: " + (finTime - iniTime) + " en id " + id);
         total += (finTime - iniTime);
         contador = 0;
         Mover();
-        if(id==1)System.out.println(id + " fin iteracion");
+        //System.out.println(id + " fin iteracion");
         return true;
     }
 

@@ -21,9 +21,11 @@ public class Ventana extends javax.swing.JFrame
     /**
      * Creates new form Ventana
      * @param ip
+     * @param numCli
      */
     public Ventana(String ip,int numCli)
     {
+        System.out.println(numCli);
         initComponents();
         clientes=new Cliente(this,ip,numCli);
         timer.start();
