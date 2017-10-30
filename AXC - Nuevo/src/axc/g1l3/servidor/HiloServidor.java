@@ -41,7 +41,7 @@ public class HiloServidor extends Thread
     ArrayList<ArrayList<Long>> Latencias = new ArrayList<>(cantidadClientes);
     Servidor padre;
 
-    public HiloServidor(int cantidadClientes, int tamanoGrupos, int iteraciones, int puertoServidor, Servidor padre, ArrayList<DatagramPacket> Paquetes, ArrayList<String> Mensajes, DatagramSocket UDP, boolean primero,ArrayList<DatagramPacket> Pendientes,ArrayList<String> MPendientes)
+    public HiloServidor(int cantidadClientes, int tamanoGrupos, int iteraciones, int puertoServidor, Servidor padre, ArrayList<DatagramPacket> Paquetes, ArrayList<String> Mensajes, DatagramSocket UDP, boolean primero, ArrayList<DatagramPacket> Pendientes, ArrayList<String> MPendientes)
     {
         this.cantidadClientes = cantidadClientes;
         this.tamanoGrupos = tamanoGrupos;
@@ -54,8 +54,8 @@ public class HiloServidor extends Thread
         this.Mensajes = Mensajes;
         this.Paquetes = Paquetes;
         this.UDP = UDP;
-        this.primero=primero;
-            
+        this.primero = primero;
+
     }
 
     public void AceptarConexiones()
@@ -126,8 +126,9 @@ public class HiloServidor extends Thread
     public void run()
     {
         //System.out.println("Comienzo Run");
-        if(primero)
-                ComienzoComunicacion();
+        if (primero) {
+            ComienzoComunicacion();
+        }
 
         while (true) {
             try {
@@ -190,7 +191,7 @@ public class HiloServidor extends Thread
 
     public void reenviarCoordenadas(boolean inicializado, ArrayList<DatagramPacket> Paquetes, ArrayList<String> Mensajes, DatagramPacket paqueteRecibido, String mensaje) throws IOException
     {
-        padre.print("Recibida coordenadas de "+procesarMensaje(mensaje, 2)+".\n");
+        padre.print("Recibida coordenadas de " + procesarMensaje(mensaje, 2) + ".\n");
         if (!inicializado) {
             Paquetes.add(paqueteRecibido);
             Mensajes.add(mensaje);
@@ -218,7 +219,7 @@ public class HiloServidor extends Thread
                     //System.out.println("Enviando: " + mensajeEnBytes + " a " + Paquetes.get(m).getPort());
                     DatagramPacket paqueteEnvio = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, Paquetes.get(m).getAddress(), Paquetes.get(m).getPort());
                     UDP.send(paqueteEnvio);
-                    padre.print("Enviadas coordenadas de "+idClienteEnviar+" a "+idEnviar+".\n");
+                    padre.print("Enviadas coordenadas de " + idClienteEnviar + " a " + idEnviar + ".\n");
                 }
             }
 
@@ -238,7 +239,7 @@ public class HiloServidor extends Thread
                     InetAddress IP = Paquetes.get(i).getAddress();
                     DatagramPacket paqueteEnvio = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, IP, puertoDestino);
                     UDP.send(paqueteEnvio);
-                    padre.print("Reenviada Confirmacion de "+id+" a "+procesarMensaje(Mensajes.get(i), 2)+".\n");
+                    padre.print("Reenviada Confirmacion de " + id + " a " + procesarMensaje(Mensajes.get(i), 2) + ".\n");
                     return;
                 }
             }
@@ -256,7 +257,7 @@ public class HiloServidor extends Thread
 
         grupo = procesarMensaje(mensaje, 3);
         tiempo = procesarMensajeLon(mensaje, 4);
-        padre.print("Recibida Latencia de "+procesarMensaje(mensaje, 2)+" de "+tiempo+" ms.\n");
+        padre.print("Recibida Latencia de " + procesarMensaje(mensaje, 2) + " de " + tiempo + " ms.\n");
         System.out.println("Latencia recibida: " + tiempo);
         Latencias.get(grupo).add(tiempo);
         latencias++;
@@ -268,6 +269,8 @@ public class HiloServidor extends Thread
 
     void calcularTiempos()
     {
+        System.out.println("DEBUG: CALCULANDO TIEMPOS");
+        System.out.println(Latencias);
         float latencia_media;
 
         for (int i = 0; i < Latencias.size(); i++) {
@@ -276,10 +279,18 @@ public class HiloServidor extends Thread
                 latencia_media += Latencias.get(i).get(j);
             }
 
-            latencia_media = latencia_media / 1000;
-
+            latencia_media = latencia_media / Latencias.get(i).size();
+            Latencias.set(i, new ArrayList());
+            Latencias.get(i).add((long) latencia_media);
             padre.print("Latencia medio del grupo " + i + " = " + latencia_media + " ms.\n");
         }
+        latencia_media = 0;
+        for (int i = 0; i < Latencias.size(); i++) {
+            latencia_media += Latencias.get(i).get(0);
+        }
+        latencia_media = latencia_media / Latencias.size();
+        padre.print("Latencia media total = " + latencia_media + " ms.\n");
+
     }
 
     private int procesarMensaje(String Mensaje, int c)
@@ -319,5 +330,4 @@ public class HiloServidor extends Thread
         }
         return 0l;
     }
-
 }
