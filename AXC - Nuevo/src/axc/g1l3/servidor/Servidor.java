@@ -10,6 +10,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,38 +24,64 @@ public class Servidor
     private final int cantidadClientes;
     private final int tamanoGrupos;
     private final int iteraciones;
-    private HiloServidor hilo;
+    private ArrayList<HiloServidor> hilo;
     private final int puerto=1993;
     private Ventana vista;
-    ArrayList<DatagramPacket> Paquetes,Pendientes;
-    ArrayList<String> Mensajes,MPendientes;
+    ArrayList<DatagramPacket> Pendientes;
+    ArrayList<String> MPendientes;
+    ArrayList<ArrayList<DatagramPacket>> Paquetes;
+    ArrayList<ArrayList<String>> Mensajes;
     DatagramSocket UDP;
+    int latencias;
+    ArrayList<ReentrantLock> Locks;
+    ArrayList<ArrayList<Long>> Latencias;
 
     public Servidor(int cantidadClientes, int tamanoGrupos, int iteraciones, Ventana vista)
     {
+        hilo=new ArrayList();
+        Locks=new ArrayList();
+        Locks.add(new ReentrantLock());
+        Locks.add(new ReentrantLock());
+        Locks.add(new ReentrantLock());
+        latencias=0;
         this.cantidadClientes = cantidadClientes;
         this.tamanoGrupos = tamanoGrupos;
         this.iteraciones = iteraciones;
         this.vista=vista;
-        Paquetes = new ArrayList();
-        Mensajes = new ArrayList();
+        int num=cantidadClientes/tamanoGrupos;
+        Paquetes = new ArrayList<>();
+        Mensajes = new ArrayList<>();
+        Latencias = new ArrayList<>();
+        for(int i=0;i<num;i++)
+        {
+            Paquetes.add(new ArrayList());
+            Mensajes.add(new ArrayList());
+            Latencias.add(new ArrayList());
+        }
+        //COMPROBAR SI SE INICIALIZA BIEN EL ARRAY DE ARRAYS
+            System.out.println(Mensajes);   //NO SE INICIALIZA BIEN
         Pendientes = new ArrayList();
         MPendientes = new ArrayList();
         try {
             UDP = new DatagramSocket(1993);
         } catch (SocketException ex) {
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
+            System.exit(0);
         }
-        hilo = new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,true,Pendientes,MPendientes);
+        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,true,Pendientes,MPendientes,latencias,Locks,Latencias));
         //Se pueden crear más hilos, pero no aceptan conexiones y el valo booleano debe ser false
-        hilo.AceptarConexiones();
+        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,latencias,Locks,Latencias));
+        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,latencias,Locks,Latencias));
+        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,latencias,Locks,Latencias));
+        hilo.get(0).AceptarConexiones();
         vista.Lanzar();
 
     }
     
     public void LanzarPrueba()
     {
-            hilo.start();
+        for(int i=0;i<hilo.size();i++)
+            hilo.get(i).start();
             //Si hay más hilos lanzarlos aqui
     }
 
@@ -66,7 +93,12 @@ public class Servidor
 
     void print(String string)
     {
+        try{
+        Locks.get(2).lock();
         vista.print(string);
+        }catch(Exception e){}finally{
+        Locks.get(2).unlock();
+        }
     }
 
     void clienteMas(int i)
