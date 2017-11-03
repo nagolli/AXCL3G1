@@ -198,10 +198,10 @@ public class HiloCliente extends Thread
         }
         //System.out.println("Como contador es igual que "+(tamGrupo-1));
         //System.out.println("Calculo de latencia");
-        //finTime = System.currentTimeMillis();
+        finTime = System.currentTimeMillis();
         //System.out.println(finTime+"-"+iniTime);
         //System.out.println("Latencia: " + (finTime - iniTime) + " en id " + id);
-        total += (System.currentTimeMillis() - iniTime);
+        total += (finTime - iniTime);
         //System.out.println("Latencia total: " + total + " en id " + id);
         contador = 0;
         Mover();

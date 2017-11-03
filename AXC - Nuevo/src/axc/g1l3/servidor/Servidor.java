@@ -32,7 +32,6 @@ public class Servidor
     ArrayList<ArrayList<DatagramPacket>> Paquetes;
     ArrayList<ArrayList<String>> Mensajes;
     DatagramSocket UDP;
-    int latencias;
     ArrayList<ReentrantLock> Locks;
     ArrayList<ArrayList<Long>> Latencias;
 
@@ -43,7 +42,6 @@ public class Servidor
         Locks.add(new ReentrantLock());
         Locks.add(new ReentrantLock());
         Locks.add(new ReentrantLock());
-        latencias=0;
         this.cantidadClientes = cantidadClientes;
         this.tamanoGrupos = tamanoGrupos;
         this.iteraciones = iteraciones;
@@ -68,11 +66,11 @@ public class Servidor
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
             System.exit(0);
         }
-        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,true,Pendientes,MPendientes,latencias,Locks,Latencias));
+        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,true,Pendientes,MPendientes,Locks,Latencias));
         //Se pueden crear más hilos, pero no aceptan conexiones y el valo booleano debe ser false
-        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,latencias,Locks,Latencias));
-        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,latencias,Locks,Latencias));
-        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,latencias,Locks,Latencias));
+        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,Locks,Latencias));
+        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,Locks,Latencias));
+        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,Locks,Latencias));
         hilo.get(0).AceptarConexiones();
         vista.Lanzar();
 

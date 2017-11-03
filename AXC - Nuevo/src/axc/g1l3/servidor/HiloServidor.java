@@ -32,7 +32,6 @@ public class HiloServidor extends Thread
     int iteraciones;
     ArrayList<DatagramPacket> Pendientes;
     ArrayList<String> MPendientes;
-    int latencias;
     ArrayList<ArrayList<DatagramPacket>> Paquetes; //PONER INDIRECCION
     ArrayList<ArrayList<String>> Mensajes;         //PONER INDIRECCION
     boolean primero;
@@ -43,7 +42,7 @@ public class HiloServidor extends Thread
     Servidor padre;
     ArrayList<ReentrantLock> Locks;
 
-    public HiloServidor(int cantidadClientes, int tamanoGrupos, int iteraciones, int puertoServidor, Servidor padre, ArrayList<ArrayList<DatagramPacket>> Paquetes, ArrayList<ArrayList<String>> Mensajes, DatagramSocket UDP, boolean primero, ArrayList<DatagramPacket> Pendientes, ArrayList<String> MPendientes, int latencias, ArrayList<ReentrantLock> Locks, ArrayList<ArrayList<Long>> Latencias)
+    public HiloServidor(int cantidadClientes, int tamanoGrupos, int iteraciones, int puertoServidor, Servidor padre, ArrayList<ArrayList<DatagramPacket>> Paquetes, ArrayList<ArrayList<String>> Mensajes, DatagramSocket UDP, boolean primero, ArrayList<DatagramPacket> Pendientes, ArrayList<String> MPendientes, ArrayList<ReentrantLock> Locks, ArrayList<ArrayList<Long>> Latencias)
     {
         this.Locks=Locks;
         this.cantidadClientes = cantidadClientes;
@@ -273,14 +272,13 @@ public class HiloServidor extends Thread
         mensaje = new String(mensajeEnBytes).trim();
 
         grupo = procesarMensaje(mensaje, 3);
-        tiempo = procesarMensajeLon(mensaje, 4);
+        tiempo = procesarMensajeLon(mensaje, 4)/iteraciones;
         padre.print("Recibida Latencia de " + procesarMensaje(mensaje, 2) + " de " + tiempo + " ms.\n");
         //System.out.println("Latencia recibida: " + tiempo);
         try{
         Locks.get(1).lock();
         Latencias.get(grupo).add(tiempo);
-        latencias++;
-        if (latencias == cantidadClientes) {    
+        if (SumaLatencias(Latencias) == cantidadClientes) {    
             calcularTiempos();
         }
         }catch(Exception e){}finally{
@@ -357,6 +355,14 @@ public class HiloServidor extends Thread
         int cont=0;
         for(int i=0;i<Paquetes.size();i++)
             cont+=Paquetes.get(i).size();
+        return cont;
+    }
+    
+    private int SumaLatencias(ArrayList<ArrayList<Long>> Latencias)
+    {
+        int cont=0;
+        for(int i=0;i<Latencias.size();i++)
+            cont+=Latencias.get(i).size();
         return cont;
     }
 }
