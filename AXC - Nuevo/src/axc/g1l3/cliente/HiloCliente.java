@@ -46,6 +46,14 @@ public class HiloCliente extends Thread
     CyclicBarrier barrera;
     int contador;
 
+    /**
+     * Constructor de la clase HiloCliente con parametros.
+     * 
+     * @param ip            Ip del hilo creado.
+     * @param puerto        Puerto del hilo creado.
+     * @param padre         Padre del hilo creado.
+     * @param barrera       Barrera que usaremos para lanzar multiples hilos.
+     */
     public HiloCliente(InetAddress ip, int puerto, Cliente padre, CyclicBarrier barrera)
     {
         this.puerto = puerto;
@@ -57,24 +65,45 @@ public class HiloCliente extends Thread
         this.barrera = barrera;
     }
 
+    /**
+     * 
+     */
+    @Override
     public void run()
     {
         String mensaje;
+        /* DatagramPacket --> Permite crear instancias de un array de bytes, 
+        *  que agrupa el mensaje, la longitud del mensaje, la dirección Internet
+        *  y el puerto local del socket de destino.
+        */
         DatagramPacket paqueteEnviar;
+        
         byte[] mensajeEnBytes;
         DatagramPacket paqueteRecibido;
+        /*
+        * Intentamos realizar una conexión, con la función booleana conectar(),
+        * si se consigue conectar, se realiza 
+        */
         try {
             if (conectar()) {
                 //Configuracion por TCP
                 //System.out.println("Conectado y configurando");
+                // Es útil para leer datos del tipo primitivo de una forma portable.
                 recibir_datos = new DataInputStream(TCP.getInputStream());
+                /*readUTF() --> Lee una cadena que ha sido codificada usando un 
+                * formato UTF-8 modificado. La cadena de caracteres se decodifica
+                * desde el UTF y se devuelve como String.
+                */
                 mensaje = recibir_datos.readUTF();
                 id = procesarMensaje(mensaje, 1);
                 numGrupo = procesarMensaje(mensaje, 2);
                 tamGrupo = procesarMensaje(mensaje, 3);
                 iteraciones = procesarMensaje(mensaje, 4);
+                //Cerramos las conexiones despues de procesar los mensajes.
                 recibir_datos.close();
                 TCP.close();
+                //Bucle para añadir las posiciones al array, dependiendo del 
+                //tamaño del grupo
                 for (int i = 0; i < tamGrupo; i++) {
                     Posiciones.add(new ArrayList()
                     {
@@ -92,6 +121,7 @@ public class HiloCliente extends Thread
                     //Sincronizador de hilos de este cliente
                     contador = 0;
                     try {
+                        //Bloquea hasta que los hilos hagan esta llamada.
                         barrera.await();
                     } catch (InterruptedException ex) {
                         Logger.getLogger(HiloCliente.class.getName()).log(Level.SEVERE, null, ex);
@@ -101,6 +131,7 @@ public class HiloCliente extends Thread
 
                     //System.out.println("Sale de barrera");
                     //System.out.println(id + " comienza iteracion " + (iteracion + 1));
+                    //Devuelve el tiempo en milisegundos.
                     iniTime = System.currentTimeMillis();
 
                     //ENVIAR COORDENADAS
@@ -119,6 +150,7 @@ public class HiloCliente extends Thread
                         //System.out.println(id+"Esperando mensaje: ");
                         //if(id==1)System.out.println("Bucle UDP "+i+((tamGrupo-1)*2));
                         try {
+                            //tiempo de espera especificado, en milisegundos.
                             UDP.setSoTimeout(15000);
                         } catch (SocketException ex) {
                             //System.out.println(id+"SOCKET EXCEPTION: ");
@@ -126,6 +158,7 @@ public class HiloCliente extends Thread
                         mensajeEnBytes = new byte[256];
                         paqueteRecibido = new DatagramPacket(mensajeEnBytes, 256);
                         try {
+                            //Recibe un DatagramPacket de este socket
                             UDP.receive(paqueteRecibido);
                             mensaje = new String(mensajeEnBytes).trim();
                             //System.out.println(id + " mensaje recibido ");
@@ -150,11 +183,20 @@ public class HiloCliente extends Thread
                 enviarLatencias();
                 UDP.close();
             }
-        } catch (IOException ex) {
+        }
+        //Si no se puede conectar se lanzara una excepcion con el mensaje de error
+        //correspondiente.
+        catch (IOException ex) {
             System.out.println("DEBUG: " + ex);
         }
     }
 
+    /**
+     * En esta función creamos una conexión con protocolos TCP y UDP.
+     * 
+     * @return          True si la conexión se ha realizado con exito.
+     *                  False si la conexión no es aceptada.
+     */
     private boolean conectar()
     {
         try {
@@ -167,6 +209,14 @@ public class HiloCliente extends Thread
         }
     }
 
+    /**
+     * Esta función se encarga de recibir las coordenadas de cada uno de los
+     * clientes.
+     * 
+     * @param mensaje                   Mensaje a enviar
+     * @param paqueteRecibido           Paquete que se ha recibido.
+     * @throws IOException              Posible excepción.
+     */
     private void RecibirCoordenada(String mensaje, DatagramPacket paqueteRecibido) throws IOException
     {
         //RECIBIR COORDENADAS
@@ -185,13 +235,21 @@ public class HiloCliente extends Thread
         //System.out.println(id + " envia confirmacion "+mensaje);
     }
 
+    /**
+     * Esta función confirma si la información se ha recibido correctamente, si 
+     * el contador es menor que el tamaño del grupo se incrementa el contador y 
+     * devuelve true ya que la informacion se ha recibido,sino devuelve false.
+     * 
+     * @return      Devolveremos true si la información se ha enviado correctamente.
+     *              False en caso de que la información se pierda.
+     */
     private boolean RecibirConfirmacion()
     {
         //System.out.println(id + "Recibe confirmacion, lleva" + contador);
-        if (contador < tamGrupo - 1) {
+        //if (contador < tamGrupo - 1) {
             //System.out.println("Aumenta contador");
             contador++;
-        }
+        //}
         if (contador < tamGrupo - 1) {
             //System.out.println("Como contador es menor que "+(tamGrupo-1)+"No hace nada");
             return false;
@@ -209,6 +267,10 @@ public class HiloCliente extends Thread
         return true;
     }
 
+    /**
+     * Esta funcion calcula las latencias en tiempo real, calculamos una media 
+     * de latencias con el total entre las iteraciones que se hacen. 
+     */
     private void enviarLatencias()
     {
         //Sincronizador de hilos de este cliente
@@ -236,12 +298,20 @@ public class HiloCliente extends Thread
         }
     }
 
+    /**
+     * Se calcula una posición de forma aleatoria tomando valores maximos y 
+     * minimos de las coordenadas X e Y.
+     */
     private void NuevaPosicion()
     {
         x = (int) ((maxX - minX) * random());
         y = (int) ((maxY - minY) * random());
     }
 
+    /**
+     * Calculamos los movimientos que se realizan por las distintas coordenadas
+     * y la añadimos, con su id y sus coordenadas X e Y.
+     */
     private void Mover()
     {
         int aux = (int) (random() % 9);
@@ -272,6 +342,22 @@ public class HiloCliente extends Thread
         anadirPosicion(id, x, y);
     }
 
+    /**
+     * En esta función procesamos los distintos mensajes que se van a enviar, 
+     * teniendo en cuenta la longitud del mensaje y cada vez que  llegamos al
+     * caracter "/" sabemos que ya tenemos una parte del mensaje registrada.
+     * Si llegamos a tener el mismo numero de atributos que esperabamos tener, 
+     * devolvemos el numero de atributos que tiene el mensaje. Sino obtenemos
+     * que la variable num sea una cadena vacia. Mientras que si no encontramos
+     * el caracter "/" guardamos en la variable num su antiguo valor mas lo que 
+     * haya en dicho índice especificado de String.
+     * 
+     * @param Mensaje       Mensaje a enviar.
+     * @param c             Numero de atributos que tiene el mensaje.
+     * @return              Devolvemos el numero de atributos que tiene el 
+     *                      mensaje, siempre que haya el caracter "/" o sino 
+     *                      devolveremos -1.
+     */
     private int procesarMensaje(String Mensaje, int c)
     {
         String num = "";
@@ -295,12 +381,27 @@ public class HiloCliente extends Thread
         return -1;
     }
 
+    /**
+     * Esta función añade las distintas posiciones por cada cliente que se 
+     * conecta.
+     * 
+     * @param idRec         Identificador.
+     * @param X             Coordenada X.
+     * @param Y             Coordenada Y.
+     */
     private void anadirPosicion(int idRec, int X, int Y)
     {
         Posiciones.get(idRec % tamGrupo).set(0, X);
         Posiciones.get(idRec % tamGrupo).set(1, Y);
     }
 
+    /**
+     * Funcion toString que pasa todos los atributos de la clase HiloCliente a un
+     * String y lo devuelve con la variable Mensaje.
+     * 
+     * @return      Mensaje completo del HiloCliente con toda su informacion 
+     *              correspondiente.
+     */
     @Override
     public String toString()
     {
@@ -319,5 +420,3 @@ public class HiloCliente extends Thread
         return Mensaje;
     } 
 }
-
-
