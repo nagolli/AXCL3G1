@@ -56,8 +56,6 @@ public class Servidor
             Mensajes.add(new ArrayList());
             Latencias.add(new ArrayList());
         }
-        //COMPROBAR SI SE INICIALIZA BIEN EL ARRAY DE ARRAYS
-            System.out.println(Mensajes);   //NO SE INICIALIZA BIEN
         Pendientes = new ArrayList();
         MPendientes = new ArrayList();
         try {
