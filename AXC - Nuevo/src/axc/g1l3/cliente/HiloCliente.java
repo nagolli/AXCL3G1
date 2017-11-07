@@ -136,7 +136,7 @@ public class HiloCliente extends Thread
 
                     //ENVIAR COORDENADAS
                     try {
-                        mensaje = 1 + "/" + id + "/" + numGrupo + "/" + x + "/" + y + "/";
+                        mensaje = 1 + "/" + id + "/" + numGrupo + "/" + x + "/" + y + "/"+iteracion+"/";
                         mensajeEnBytes = mensaje.getBytes();
                         paqueteEnviar = new DatagramPacket(mensajeEnBytes, mensaje.length(), ip, puerto);
 
@@ -151,7 +151,7 @@ public class HiloCliente extends Thread
                         //if(id==1)System.out.println("Bucle UDP "+i+((tamGrupo-1)*2));
                         try {
                             //tiempo de espera especificado, en milisegundos.
-                            UDP.setSoTimeout(15000);
+                            UDP.setSoTimeout(20000);
                         } catch (SocketException ex) {
                             //System.out.println(id+"SOCKET EXCEPTION: ");
                         }
@@ -165,7 +165,10 @@ public class HiloCliente extends Thread
                             switch (procesarMensaje(mensaje, 1)) {
                                 case 1:
                                     //if(id==1)System.out.println("Recibe coordenada "+mensaje);
-                                    RecibirCoordenada(mensaje, paqueteRecibido);
+                                    if(!RecibirCoordenada(mensaje, paqueteRecibido))
+                                    {
+                                        i--;
+                                    }
                                     break;
                                 case 2:
                                     //if(id==1)System.out.println("Recibe confirmacion");
@@ -174,7 +177,12 @@ public class HiloCliente extends Thread
                             }
                         } catch (Exception e) {
                             //System.out.println(id+"Mensaje no llegado: ");
-                            i--;
+                            i=tamGrupo*2;
+                            finTime = System.currentTimeMillis();
+                            total += (finTime - iniTime);
+                            contador = 0;
+                            Mover();
+                            System.out.println("Mensaje perdido");
                         }
                     }
 
@@ -187,7 +195,7 @@ public class HiloCliente extends Thread
         //Si no se puede conectar se lanzara una excepcion con el mensaje de error
         //correspondiente.
         catch (IOException ex) {
-            System.out.println("DEBUG: " + ex);
+            //System.out.println("DEBUG: " + ex);
         }
     }
 
@@ -215,12 +223,17 @@ public class HiloCliente extends Thread
      * 
      * @param mensaje                   Mensaje a enviar
      * @param paqueteRecibido           Paquete que se ha recibido.
+     * @return boolean                  Si la cordenada es de su iteracion.
      * @throws IOException              Posible excepción.
      */
-    private void RecibirCoordenada(String mensaje, DatagramPacket paqueteRecibido) throws IOException
+    private boolean RecibirCoordenada(String mensaje, DatagramPacket paqueteRecibido) throws IOException
     {
+        if(procesarMensaje(mensaje,6)!=iteracion)
+        {
+            System.out.println("Mensaje de otra iteracion");
+            return false;
+        }
         //RECIBIR COORDENADAS
-
         int xRec = procesarMensaje(mensaje, 4);
         int yRec = procesarMensaje(mensaje, 5);
 
@@ -233,6 +246,7 @@ public class HiloCliente extends Thread
 
         UDP.send(paqueteEnviar);
         //System.out.println(id + " envia confirmacion "+mensaje);
+        return true;
     }
 
     /**
@@ -383,7 +397,7 @@ public class HiloCliente extends Thread
 
     /**
      * Esta función añade las distintas posiciones por cada cliente que se 
-     * conecta.
+     * reporta su posicion.
      * 
      * @param idRec         Identificador.
      * @param X             Coordenada X.
