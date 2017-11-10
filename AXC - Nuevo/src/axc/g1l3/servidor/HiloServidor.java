@@ -6,6 +6,7 @@
 package axc.g1l3.servidor;
 
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -18,6 +19,10 @@ import java.util.ArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
  *
@@ -147,7 +152,7 @@ public class HiloServidor extends Thread
         }
     }
 
-    private void bucleUDP(ArrayList<ArrayList<DatagramPacket>> Paquetes, ArrayList<ArrayList<String>> Mensajes) throws SocketException
+    private void bucleUDP(ArrayList<ArrayList<DatagramPacket>> Paquetes, ArrayList<ArrayList<String>> Mensajes) throws SocketException, LineUnavailableException
     {
         String mensaje;
         DatagramPacket paqueteRecibido;
@@ -190,6 +195,15 @@ public class HiloServidor extends Thread
             }
         } catch (SocketTimeoutException e) {
             System.out.println("No llegan mensajes");
+            /*
+            try {
+                Clip sonido = AudioSystem.getClip();
+                sonido.open(AudioSystem.getAudioInputStream(new File("alarma.wav")));
+                sonido.start();
+            } catch (UnsupportedAudioFileException | IOException ex) {
+                Logger.getLogger(HiloServidor.class.getName()).log(Level.SEVERE, null, ex);
+            }*/
+            
         } catch (IOException ex) {
             Logger.getLogger(HiloServidor.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -198,7 +212,7 @@ public class HiloServidor extends Thread
 
     public void reenviarCoordenadas(boolean inicializado, ArrayList<ArrayList<DatagramPacket>> Paquetes, ArrayList<ArrayList<String>> Mensajes, DatagramPacket paqueteRecibido, String mensaje) throws IOException
     {
-        padre.print("Recibida coordenadas de " + procesarMensaje(mensaje, 2) + ".\n");
+        //padre.print("Recibida coordenadas de " + procesarMensaje(mensaje, 2) + ".\n");
         int grupoClienteRecibido = procesarMensaje(mensaje, 3);
         
         if(!inicializado)
@@ -210,12 +224,12 @@ public class HiloServidor extends Thread
             Paquetes.get(grupoClienteRecibido).add(paqueteRecibido); 
             Mensajes.get(grupoClienteRecibido).add(mensaje);         
             if (cantidadClientes - 1 > Pendientes.size()) {          
-                //System.out.println("Añadido a pendientes" + (Pendientes.size() + 1));
+                System.out.println("Añadido a pendientes" + (Pendientes.size() + 1));
                 Pendientes.add(paqueteRecibido);
                 MPendientes.add(mensaje);
                 return;
             } else {
-                //System.out.println("Enviando Pendientes");
+                System.out.println("Enviando Pendientes");
                 for (int i = 0; i < cantidadClientes - 1; i++) {
                     reenviarCoordenadas(true, Paquetes, Mensajes, Pendientes.get(i), MPendientes.get(i));
                 }
@@ -234,10 +248,10 @@ public class HiloServidor extends Thread
             int idEnviar = procesarMensaje(Mensajes.get(grupoClienteRecibido).get(m), 2);
                 if (idEnviar != idClienteEnviar) {
                     byte[] mensajeEnBytes = paqueteRecibido.getData();
-                    //System.out.println("Enviando: " + mensajeEnBytes + " a " + Paquetes.get(grupoClienteRecibido).get(m).getPort());
+                    System.out.println("Enviando: de" +idClienteEnviar+" a "+ idEnviar);
                     DatagramPacket paqueteEnvio = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, Paquetes.get(grupoClienteRecibido).get(m).getAddress(), Paquetes.get(grupoClienteRecibido).get(m).getPort());
                     UDP.send(paqueteEnvio);
-                    padre.print("Enviadas coordenadas de " + idClienteEnviar + " a " + idEnviar + ".\n");
+                    //padre.print("Enviadas coordenadas de " + idClienteEnviar + " a " + idEnviar + ".\n");
                 
             }
 
@@ -256,7 +270,8 @@ public class HiloServidor extends Thread
                     InetAddress IP = Paquetes.get(grupo).get(i).getAddress();
                     DatagramPacket paqueteEnvio = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, IP, puertoDestino);
                     UDP.send(paqueteEnvio);
-                    padre.print("Reenviada Confirmacion de " + procesarMensaje(mensaje, 2) + " a " + idConfirmar + ".\n");
+                    System.out.println("Reenviada Confirmacion de " + procesarMensaje(mensaje, 2) + " a " + idConfirmar + ".\n");
+                    //padre.print("Reenviada Confirmacion de " + procesarMensaje(mensaje, 2) + " a " + idConfirmar + ".\n");
                     return;
                 }
         }
