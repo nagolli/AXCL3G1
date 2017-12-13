@@ -27,7 +27,7 @@ public class Ventana extends javax.swing.JFrame
     {
         this.setTitle("Clientes");
         Ventana.numCli=numCli;
-        System.out.println(numCli);
+        //System.out.println(numCli);
         initComponents();
         clientes=new Cliente(this,ip,numCli);
         timer.start();

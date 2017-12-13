@@ -32,9 +32,7 @@ public class Cliente
      * 
      * @param padre         Atributo de la clase Ventana.
      * @param ip            Ip del Cliente
-     * @param numCli        Numero de cliente que despues se añadiran a una barrera
-     *                      utilizaremos la clase CyclicBarrier para lanzar varios
-     *                      hilos a la vez ya que con join() se haria muy pesado.
+     * @param numCli        Numero de clientes que se lanzan.
      */
     Cliente(Ventana padre, String ip, int numCli)
     {
@@ -46,7 +44,7 @@ public class Cliente
             Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
         }
         port = 1993;
-        System.out.println(numCli);
+        //System.out.println(numCli);
         barrera = new CyclicBarrier(numCli);
     }
 
@@ -62,11 +60,11 @@ public class Cliente
         try {
             
             for (int i = 0; i < aux; i++) {
-                System.out.println(ip+":"+port);
+                //System.out.println(ip+":"+port);
                 HiloCliente hilo = new HiloCliente(ip, port,this,barrera);
                 clientes.add(hilo);
                 hilo.start();
-                Thread.sleep(1);
+                Thread.sleep(10);
             }
         } catch (Exception e) {
             System.out.println("Error al lanzar hilo: "+e);

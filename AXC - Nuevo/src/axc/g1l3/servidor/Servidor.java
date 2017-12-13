@@ -34,9 +34,13 @@ public class Servidor
     DatagramSocket UDP;
     ArrayList<ReentrantLock> Locks;
     ArrayList<ArrayList<Long>> Latencias;
+    ArrayList<DatagramPacket> Cola;
+    HiloBuffer buffer;
+    int procesadores;
 
-    public Servidor(int cantidadClientes, int tamanoGrupos, int iteraciones, Ventana vista)
+    public Servidor(int cantidadClientes, int tamanoGrupos, int iteraciones, Ventana vista, int procesadores)
     {
+        this.procesadores = procesadores;
         hilo=new ArrayList();
         Locks=new ArrayList();
         Locks.add(new ReentrantLock());
@@ -50,6 +54,7 @@ public class Servidor
         Paquetes = new ArrayList<>();
         Mensajes = new ArrayList<>();
         Latencias = new ArrayList<>();
+        Cola = new ArrayList<>();
         for(int i=0;i<num;i++)
         {
             Paquetes.add(new ArrayList());
@@ -64,18 +69,20 @@ public class Servidor
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
             System.exit(0);
         }
-        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,true,Pendientes,MPendientes,Locks,Latencias));
+        buffer=new HiloBuffer(UDP,Cola);
+        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,true,Pendientes,MPendientes,Locks,Latencias,Cola));
         //Se pueden crear más hilos, pero no aceptan conexiones y el valor booleano debe ser false
-        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,Locks,Latencias));
-        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,Locks,Latencias));
-        hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,Locks,Latencias));
+        for(int i=0;i<procesadores-2;i++)
+            hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,Locks,Latencias,Cola));
         hilo.get(0).AceptarConexiones();
         vista.Lanzar();
+        
 
     }
     
     public void LanzarPrueba()
     {
+        buffer.start();
         for(int i=0;i<hilo.size();i++)
             hilo.get(i).start();
     }

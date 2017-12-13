@@ -24,7 +24,7 @@ public class Ventana extends javax.swing.JFrame
     /**
      * Creates new form Ventana
      */
-    public Ventana(int clientes, int tamanoGrupos, int iteraciones) throws FileNotFoundException
+    public Ventana(int clientes, int tamanoGrupos, int iteraciones,int procesadores) throws FileNotFoundException
     {
         this.setTitle("Servidor");
         initComponents();
@@ -36,7 +36,7 @@ public class Ventana extends javax.swing.JFrame
         TextMaximo.setText(String.valueOf(tamanoGrupos));
         SetIteraciones(iteraciones);
         this.setVisible(true);
-        servidor=new Servidor(clientes,tamanoGrupos,iteraciones,this);    //Creación del objeto
+        servidor=new Servidor(clientes,tamanoGrupos,iteraciones,this,procesadores);    //Creación del objeto
     }
 
     public void SetClientes(int clientes)
