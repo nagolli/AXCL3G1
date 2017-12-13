@@ -46,10 +46,11 @@ public class HiloServidor extends Thread
     ArrayList<ArrayList<Long>> Latencias;   //Grupo, Latencia
     Servidor padre;
     ArrayList<ReentrantLock> Locks;
+    ArrayList<DatagramPacket> cola;
 
-    public HiloServidor(int cantidadClientes, int tamanoGrupos, int iteraciones, int puertoServidor, Servidor padre, ArrayList<ArrayList<DatagramPacket>> Paquetes, ArrayList<ArrayList<String>> Mensajes, DatagramSocket UDP, boolean primero, ArrayList<DatagramPacket> Pendientes, ArrayList<String> MPendientes, ArrayList<ReentrantLock> Locks, ArrayList<ArrayList<Long>> Latencias)
+    public HiloServidor(int cantidadClientes, int tamanoGrupos, int iteraciones, int puertoServidor, Servidor padre, ArrayList<ArrayList<DatagramPacket>> Paquetes, ArrayList<ArrayList<String>> Mensajes, DatagramSocket UDP, boolean primero, ArrayList<DatagramPacket> Pendientes, ArrayList<String> MPendientes, ArrayList<ReentrantLock> Locks, ArrayList<ArrayList<Long>> Latencias, ArrayList<DatagramPacket> cola)
     {
-        this.Locks=Locks;
+        this.Locks = Locks;
         this.cantidadClientes = cantidadClientes;
         this.tamanoGrupos = tamanoGrupos;
         this.iteraciones = iteraciones;
@@ -61,8 +62,8 @@ public class HiloServidor extends Thread
         this.Paquetes = Paquetes;
         this.UDP = UDP;
         this.primero = primero;
-        this.Latencias=Latencias;
-
+        this.Latencias = Latencias;
+        this.cola = cola;
     }
 
     public void AceptarConexiones()
@@ -119,13 +120,13 @@ public class HiloServidor extends Thread
                 }
             }
             enviar_datos.close();
-            
+
             for (i = 0; i < Clientes.size(); i++) {
                 for (j = 0; j < Clientes.get(i).size(); j++) {
                     Clientes.get(i).get(j).close();
                 }
             }
-            
+
             padre.print("IDs Asignadas.\n");
             UDP.setSoTimeout(20000);
             System.out.println("Fin envio Inicios");
@@ -157,12 +158,10 @@ public class HiloServidor extends Thread
         String mensaje;
         DatagramPacket paqueteRecibido;
         byte[] mensajeEnBytes;
-
-        //Recibir Mensaje UDP
-        mensajeEnBytes = new byte[256];
-        paqueteRecibido = new DatagramPacket(mensajeEnBytes, 256);
         try {
-            UDP.receive(paqueteRecibido);   ///< LOCK?
+            paqueteRecibido = cola.remove(0);
+            mensajeEnBytes = paqueteRecibido.getData();
+            
             //System.out.println("Mensaje Recibido");
             mensaje = new String(mensajeEnBytes).trim();
             //System.out.println(mensaje);
@@ -193,17 +192,7 @@ public class HiloServidor extends Thread
                         break;
                 }
             }
-        } catch (SocketTimeoutException e) {
-            System.out.println("No llegan mensajes");
-            /*
-            try {
-                Clip sonido = AudioSystem.getClip();
-                sonido.open(AudioSystem.getAudioInputStream(new File("alarma.wav")));
-                sonido.start();
-            } catch (UnsupportedAudioFileException | IOException ex) {
-                Logger.getLogger(HiloServidor.class.getName()).log(Level.SEVERE, null, ex);
-            }*/
-            
+
         } catch (IOException ex) {
             Logger.getLogger(HiloServidor.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -214,45 +203,44 @@ public class HiloServidor extends Thread
     {
         //padre.print("Recibida coordenadas de " + procesarMensaje(mensaje, 2) + ".\n");
         int grupoClienteRecibido = procesarMensaje(mensaje, 3);
-        
-        if(!inicializado)
-        {
-        try{
-        Locks.get(0).lock();
-        //System.out.println("CODE:"+cantidadClientes+" "+Pendientes.size() );
-        if ((cantidadClientes - 1 >= Pendientes.size())) {
-            Paquetes.get(grupoClienteRecibido).add(paqueteRecibido); 
-            Mensajes.get(grupoClienteRecibido).add(mensaje);         
-            if (cantidadClientes - 1 > Pendientes.size()) {          
-                System.out.println("Añadido a pendientes" + (Pendientes.size() + 1));
-                Pendientes.add(paqueteRecibido);
-                MPendientes.add(mensaje);
-                return;
-            } else {
-                System.out.println("Enviando Pendientes");
-                for (int i = 0; i < cantidadClientes - 1; i++) {
-                    reenviarCoordenadas(true, Paquetes, Mensajes, Pendientes.get(i), MPendientes.get(i));
+
+        if (!inicializado) {
+            try {
+                Locks.get(0).lock();
+                //System.out.println("CODE:"+cantidadClientes+" "+Pendientes.size() );
+                if ((cantidadClientes - 1 >= Pendientes.size())) {
+                    Paquetes.get(grupoClienteRecibido).add(paqueteRecibido);
+                    Mensajes.get(grupoClienteRecibido).add(mensaje);
+                    if (cantidadClientes - 1 > Pendientes.size()) {
+                        System.out.println("Añadido a pendientes" + (Pendientes.size() + 1));
+                        Pendientes.add(paqueteRecibido);
+                        MPendientes.add(mensaje);
+                        return;
+                    } else {
+                        System.out.println("Enviando Pendientes");
+                        for (int i = 0; i < cantidadClientes - 1; i++) {
+                            reenviarCoordenadas(true, Paquetes, Mensajes, Pendientes.get(i), MPendientes.get(i));
+                        }
+                    }
                 }
+            } catch (Exception e) {
+            } finally {
+                Locks.get(0).unlock();
             }
         }
-        }catch(Exception e){}finally{
-        Locks.get(0).unlock();
-        }
-        }
-        
-        
+
         //System.out.println("Enviando Mensajes " + cantidadClientes + " " + Mensajes.size());
         int idClienteEnviar = procesarMensaje(mensaje, 2);
         //Enviar a todos el mensaje
         for (int m = 0; m < Mensajes.get(grupoClienteRecibido).size(); m++) {
             int idEnviar = procesarMensaje(Mensajes.get(grupoClienteRecibido).get(m), 2);
-                if (idEnviar != idClienteEnviar) {
-                    byte[] mensajeEnBytes = paqueteRecibido.getData();
-                    System.out.println("Enviando: de" +idClienteEnviar+" a "+ idEnviar);
-                    DatagramPacket paqueteEnvio = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, Paquetes.get(grupoClienteRecibido).get(m).getAddress(), Paquetes.get(grupoClienteRecibido).get(m).getPort());
-                    UDP.send(paqueteEnvio);
-                    //padre.print("Enviadas coordenadas de " + idClienteEnviar + " a " + idEnviar + ".\n");
-                
+            if (idEnviar != idClienteEnviar) {
+                byte[] mensajeEnBytes = paqueteRecibido.getData();
+                System.out.println("Enviando: de" + idClienteEnviar + " a " + idEnviar);
+                DatagramPacket paqueteEnvio = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, Paquetes.get(grupoClienteRecibido).get(m).getAddress(), Paquetes.get(grupoClienteRecibido).get(m).getPort());
+                UDP.send(paqueteEnvio);
+                //padre.print("Enviadas coordenadas de " + idClienteEnviar + " a " + idEnviar + ".\n");
+
             }
 
         }
@@ -265,15 +253,15 @@ public class HiloServidor extends Thread
         int grupo = procesarMensaje(mensaje, 3);
         int idConfirmar = procesarMensaje(mensaje, 4);
         for (int i = 0; i < Paquetes.get(grupo).size(); i++) {
-                if (procesarMensaje(Mensajes.get(grupo).get(i), 2) == idConfirmar) {
-                    int puertoDestino = Paquetes.get(grupo).get(i).getPort();
-                    InetAddress IP = Paquetes.get(grupo).get(i).getAddress();
-                    DatagramPacket paqueteEnvio = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, IP, puertoDestino);
-                    UDP.send(paqueteEnvio);
-                    System.out.println("Reenviada Confirmacion de " + procesarMensaje(mensaje, 2) + " a " + idConfirmar + ".\n");
-                    //padre.print("Reenviada Confirmacion de " + procesarMensaje(mensaje, 2) + " a " + idConfirmar + ".\n");
-                    return;
-                }
+            if (procesarMensaje(Mensajes.get(grupo).get(i), 2) == idConfirmar) {
+                int puertoDestino = Paquetes.get(grupo).get(i).getPort();
+                InetAddress IP = Paquetes.get(grupo).get(i).getAddress();
+                DatagramPacket paqueteEnvio = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, IP, puertoDestino);
+                UDP.send(paqueteEnvio);
+                System.out.println("Reenviada Confirmacion de " + procesarMensaje(mensaje, 2) + " a " + idConfirmar + ".\n");
+                //padre.print("Reenviada Confirmacion de " + procesarMensaje(mensaje, 2) + " a " + idConfirmar + ".\n");
+                return;
+            }
         }
 
     }
@@ -287,17 +275,18 @@ public class HiloServidor extends Thread
         mensaje = new String(mensajeEnBytes).trim();
 
         grupo = procesarMensaje(mensaje, 3);
-        tiempo = procesarMensajeLon(mensaje, 4)/iteraciones;
+        tiempo = procesarMensajeLon(mensaje, 4) / iteraciones;
         //padre.print("Recibida Latencia de " + procesarMensaje(mensaje, 2) + " de " + tiempo + " ms.\n");
         System.out.println("Latencia recibida: " + tiempo);
-        try{
-        Locks.get(1).lock();
-        Latencias.get(grupo).add(tiempo);
-        if (SumaLatencias(Latencias) == cantidadClientes) {    
-            calcularTiempos();
-        }
-        }catch(Exception e){}finally{
-        Locks.get(1).unlock();
+        try {
+            Locks.get(1).lock();
+            Latencias.get(grupo).add(tiempo);
+            if (SumaLatencias(Latencias) == cantidadClientes) {
+                calcularTiempos();
+            }
+        } catch (Exception e) {
+        } finally {
+            Locks.get(1).unlock();
         }
     }
 
@@ -367,17 +356,19 @@ public class HiloServidor extends Thread
 
     private int SumaClientes(ArrayList<ArrayList<DatagramPacket>> Paquetes)
     {
-        int cont=0;
-        for(int i=0;i<Paquetes.size();i++)
-            cont+=Paquetes.get(i).size();
+        int cont = 0;
+        for (int i = 0; i < Paquetes.size(); i++) {
+            cont += Paquetes.get(i).size();
+        }
         return cont;
     }
-    
+
     private int SumaLatencias(ArrayList<ArrayList<Long>> Latencias)
     {
-        int cont=0;
-        for(int i=0;i<Latencias.size();i++)
-            cont+=Latencias.get(i).size();
+        int cont = 0;
+        for (int i = 0; i < Latencias.size(); i++) {
+            cont += Latencias.get(i).size();
+        }
         return cont;
     }
 }
