@@ -60,11 +60,11 @@ public class Cliente
         try {
             
             for (int i = 0; i < aux; i++) {
-                System.out.println(ip+":"+port);
+                //System.out.println(ip+":"+port);
                 HiloCliente hilo = new HiloCliente(ip, port,this,barrera);
                 clientes.add(hilo);
                 hilo.start();
-                Thread.sleep(1);
+                Thread.sleep(10);
             }
         } catch (Exception e) {
             System.out.println("Error al lanzar hilo: "+e);

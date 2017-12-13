@@ -51,6 +51,7 @@ public class HiloBuffer extends Thread
         try {
             UDP.receive(paqueteRecibido);
             cola.add(paqueteRecibido);
+            //System.out.println(cola.size());
         } catch (SocketTimeoutException e) {
             System.out.println("No llegan mensajes");
         } catch (IOException ex) {

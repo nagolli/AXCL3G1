@@ -182,7 +182,7 @@ public class HiloCliente extends Thread
                             total += (finTime - iniTime);
                             contador = 0;
                             Mover();
-                            System.out.println("Mensaje perdido");
+                            System.out.println("Timeout");
                         }
                     }
 
@@ -290,9 +290,7 @@ public class HiloCliente extends Thread
         //Sincronizador de hilos de este cliente
         try {
             barrera.await();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(HiloCliente.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (BrokenBarrierException ex) {
+        } catch (InterruptedException | BrokenBarrierException ex) {
             Logger.getLogger(HiloCliente.class.getName()).log(Level.SEVERE, null, ex);
         }
         byte[] mensajeEnBytes;
@@ -300,14 +298,14 @@ public class HiloCliente extends Thread
         String mensaje;
 
         media = total / iteraciones;
-        System.out.println("Latencia total: "+total+" y Latencia media: " + media + " en id " + id);
+        //System.out.println("Latencia total: "+total+" y Latencia media: " + media + " en id " + id);
         try {
             mensaje = 3 + "/" + id + "/" + numGrupo + "/" + media + "/";
 
             mensajeEnBytes = mensaje.getBytes();
             paqueteEnviar = new DatagramPacket(mensajeEnBytes, mensaje.length(), ip, puerto);
             UDP.send(paqueteEnviar);
-            System.out.println("Latencia enviadas " + id);
+            //System.out.println("Latencia enviadas " + id);
         } catch (IOException ex) {
         }
     }

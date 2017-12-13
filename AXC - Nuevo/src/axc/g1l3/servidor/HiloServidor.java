@@ -73,7 +73,7 @@ public class HiloServidor extends Thread
 
             TCP = new ServerSocket(puertoServidor);
             Clientes.add(new ArrayList<>(tamanoGrupos));
-            System.out.println(TCP.getInetAddress() + ":" + TCP.getLocalPort());
+            //System.out.println(TCP.getInetAddress() + ":" + TCP.getLocalPort());
             while (conexiones < cantidadClientes) {
                 Socket socket_conexion = TCP.accept();
                 Clientes.get(grupo).add(socket_conexion);
@@ -107,7 +107,7 @@ public class HiloServidor extends Thread
         int i, j;
         DataOutputStream enviar_datos = null;
         padre.print("Inicio comunicacion.\n");
-        System.out.println("Inicio Envio Inicios");
+        //System.out.println("Inicio Envio Inicios");
         try {
             Socket destino;
             for (i = 0; i < Clientes.size(); i++) {
@@ -129,7 +129,7 @@ public class HiloServidor extends Thread
 
             padre.print("IDs Asignadas.\n");
             UDP.setSoTimeout(20000);
-            System.out.println("Fin envio Inicios");
+            //System.out.println("Fin envio Inicios");
         } catch (IOException e) {
             System.err.println(e.getMessage());
             System.exit(1);
@@ -212,12 +212,12 @@ public class HiloServidor extends Thread
                     Paquetes.get(grupoClienteRecibido).add(paqueteRecibido);
                     Mensajes.get(grupoClienteRecibido).add(mensaje);
                     if (cantidadClientes - 1 > Pendientes.size()) {
-                        System.out.println("Añadido a pendientes" + (Pendientes.size() + 1));
+                        //System.out.println("Añadido a pendientes" + (Pendientes.size() + 1));
                         Pendientes.add(paqueteRecibido);
                         MPendientes.add(mensaje);
                         return;
                     } else {
-                        System.out.println("Enviando Pendientes");
+                        //System.out.println("Enviando Pendientes");
                         for (int i = 0; i < cantidadClientes - 1; i++) {
                             reenviarCoordenadas(true, Paquetes, Mensajes, Pendientes.get(i), MPendientes.get(i));
                         }
@@ -236,7 +236,7 @@ public class HiloServidor extends Thread
             int idEnviar = procesarMensaje(Mensajes.get(grupoClienteRecibido).get(m), 2);
             if (idEnviar != idClienteEnviar) {
                 byte[] mensajeEnBytes = paqueteRecibido.getData();
-                System.out.println("Enviando: de" + idClienteEnviar + " a " + idEnviar);
+                //System.out.println("Enviando: de" + idClienteEnviar + " a " + idEnviar);
                 DatagramPacket paqueteEnvio = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, Paquetes.get(grupoClienteRecibido).get(m).getAddress(), Paquetes.get(grupoClienteRecibido).get(m).getPort());
                 UDP.send(paqueteEnvio);
                 //padre.print("Enviadas coordenadas de " + idClienteEnviar + " a " + idEnviar + ".\n");
@@ -258,7 +258,7 @@ public class HiloServidor extends Thread
                 InetAddress IP = Paquetes.get(grupo).get(i).getAddress();
                 DatagramPacket paqueteEnvio = new DatagramPacket(mensajeEnBytes, mensajeEnBytes.length, IP, puertoDestino);
                 UDP.send(paqueteEnvio);
-                System.out.println("Reenviada Confirmacion de " + procesarMensaje(mensaje, 2) + " a " + idConfirmar + ".\n");
+                //System.out.println("Reenviada Confirmacion de " + procesarMensaje(mensaje, 2) + " a " + idConfirmar + ".\n");
                 //padre.print("Reenviada Confirmacion de " + procesarMensaje(mensaje, 2) + " a " + idConfirmar + ".\n");
                 return;
             }
@@ -277,7 +277,7 @@ public class HiloServidor extends Thread
         grupo = procesarMensaje(mensaje, 3);
         tiempo = procesarMensajeLon(mensaje, 4) / iteraciones;
         //padre.print("Recibida Latencia de " + procesarMensaje(mensaje, 2) + " de " + tiempo + " ms.\n");
-        System.out.println("Latencia recibida: " + tiempo);
+        //System.out.println("Latencia recibida: " + tiempo);
         try {
             Locks.get(1).lock();
             Latencias.get(grupo).add(tiempo);

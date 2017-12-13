@@ -41,7 +41,6 @@ public class Servidor
     public Servidor(int cantidadClientes, int tamanoGrupos, int iteraciones, Ventana vista, int procesadores)
     {
         this.procesadores = procesadores;
-        buffer=new HiloBuffer(UDP,Cola);
         hilo=new ArrayList();
         Locks=new ArrayList();
         Locks.add(new ReentrantLock());
@@ -70,12 +69,14 @@ public class Servidor
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
             System.exit(0);
         }
+        buffer=new HiloBuffer(UDP,Cola);
         hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,true,Pendientes,MPendientes,Locks,Latencias,Cola));
         //Se pueden crear más hilos, pero no aceptan conexiones y el valor booleano debe ser false
         for(int i=0;i<procesadores-2;i++)
             hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,Locks,Latencias,Cola));
         hilo.get(0).AceptarConexiones();
         vista.Lanzar();
+        
 
     }
     

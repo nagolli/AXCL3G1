@@ -20,7 +20,7 @@ public class AXCG1L3Servidor
     public static void main(String[] args) throws FileNotFoundException
     {
         //Argumento: Clientes, clientes por sala, Iteraciones, hilos de servidor
-        Ventana ventanaInicial=new Ventana(50,10,2,4); 
+        Ventana ventanaInicial=new Ventana(500,10,2,4); 
     }
       
 }
