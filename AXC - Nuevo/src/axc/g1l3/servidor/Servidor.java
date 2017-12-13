@@ -65,7 +65,7 @@ public class Servidor
             System.exit(0);
         }
         hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,true,Pendientes,MPendientes,Locks,Latencias));
-        //Se pueden crear más hilos, pero no aceptan conexiones y el valo booleano debe ser false
+        //Se pueden crear más hilos, pero no aceptan conexiones y el valor booleano debe ser false
         hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,Locks,Latencias));
         hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,Locks,Latencias));
         hilo.add(new HiloServidor(cantidadClientes,tamanoGrupos,iteraciones,puerto,this,Paquetes,Mensajes,UDP,false,Pendientes,MPendientes,Locks,Latencias));
@@ -78,7 +78,6 @@ public class Servidor
     {
         for(int i=0;i<hilo.size();i++)
             hilo.get(i).start();
-            //Si hay más hilos lanzarlos aqui
     }
 
     void PrintIteracion(int i)

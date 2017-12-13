@@ -66,6 +66,7 @@ public class Cliente
                 HiloCliente hilo = new HiloCliente(ip, port,this,barrera);
                 clientes.add(hilo);
                 hilo.start();
+                Thread.sleep(1);
             }
         } catch (Exception e) {
             System.out.println("Error al lanzar hilo: "+e);

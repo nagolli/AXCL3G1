@@ -43,13 +43,13 @@ public class Ventana extends javax.swing.JFrame
     {
 
         BotonAnadir = new javax.swing.JButton();
-        Spinner = new javax.swing.JSpinner(new SpinnerNumberModel(1,1,100,1));
         BotonSalir = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         textAreaInfo = new javax.swing.JTextArea();
         jLabel1 = new javax.swing.JLabel();
         SpinnerHilo = new javax.swing.JSpinner();
         jLabel2 = new javax.swing.JLabel();
+        jTextField1 = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -78,7 +78,12 @@ public class Ventana extends javax.swing.JFrame
 
         jLabel1.setText("Posiciones");
 
+        SpinnerHilo.setModel(new javax.swing.SpinnerNumberModel(0, 0, numCli-1, 1));
+
         jLabel2.setText("Hilo Mostrado");
+
+        jTextField1.setEditable(false);
+        jTextField1.setText(String.valueOf(numCli));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -86,13 +91,12 @@ public class Ventana extends javax.swing.JFrame
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(30, 30, 30)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(BotonAnadir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(Spinner, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
-                        .addComponent(BotonSalir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(SpinnerHilo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE))
-                    .addComponent(jLabel2))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(BotonAnadir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(BotonSalir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(SpinnerHilo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
+                    .addComponent(jLabel2)
+                    .addComponent(jTextField1))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1)
@@ -103,14 +107,11 @@ public class Ventana extends javax.swing.JFrame
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(9, 9, 9)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(16, 16, 16)
-                        .addComponent(Spinner, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(BotonAnadir)
                         .addGap(18, 18, 18)
@@ -118,7 +119,8 @@ public class Ventana extends javax.swing.JFrame
                         .addGap(9, 9, 9)
                         .addComponent(SpinnerHilo, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
-                        .addComponent(BotonSalir, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(BotonSalir, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -127,8 +129,7 @@ public class Ventana extends javax.swing.JFrame
 
     private void BotonAnadirActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_BotonAnadirActionPerformed
     {//GEN-HEADEREND:event_BotonAnadirActionPerformed
-        int aux=(Integer)Spinner.getValue();
-        clientes.lanzar(aux);
+        clientes.lanzar(numCli);
     }//GEN-LAST:event_BotonAnadirActionPerformed
 
     private void BotonSalirActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_BotonSalirActionPerformed
@@ -162,11 +163,11 @@ public class Ventana extends javax.swing.JFrame
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BotonAnadir;
     private javax.swing.JButton BotonSalir;
-    private javax.swing.JSpinner Spinner;
     private javax.swing.JSpinner SpinnerHilo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextField jTextField1;
     private javax.swing.JTextArea textAreaInfo;
     // End of variables declaration//GEN-END:variables
     static private String ip;

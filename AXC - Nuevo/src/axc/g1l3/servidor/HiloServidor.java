@@ -72,7 +72,7 @@ public class HiloServidor extends Thread
 
             TCP = new ServerSocket(puertoServidor);
             Clientes.add(new ArrayList<>(tamanoGrupos));
-            //System.out.println(TCP.getInetAddress() + ":" + TCP.getLocalPort());
+            System.out.println(TCP.getInetAddress() + ":" + TCP.getLocalPort());
             while (conexiones < cantidadClientes) {
                 Socket socket_conexion = TCP.accept();
                 Clientes.get(grupo).add(socket_conexion);
@@ -106,7 +106,7 @@ public class HiloServidor extends Thread
         int i, j;
         DataOutputStream enviar_datos = null;
         padre.print("Inicio comunicacion.\n");
-        //System.out.println("Inicio Envio Inicios");
+        System.out.println("Inicio Envio Inicios");
         try {
             Socket destino;
             for (i = 0; i < Clientes.size(); i++) {
@@ -127,8 +127,8 @@ public class HiloServidor extends Thread
             }
             
             padre.print("IDs Asignadas.\n");
-            UDP.setSoTimeout(10000);
-            //System.out.println("Fin envio Inicios");
+            UDP.setSoTimeout(20000);
+            System.out.println("Fin envio Inicios");
         } catch (IOException e) {
             System.err.println(e.getMessage());
             System.exit(1);
@@ -288,8 +288,8 @@ public class HiloServidor extends Thread
 
         grupo = procesarMensaje(mensaje, 3);
         tiempo = procesarMensajeLon(mensaje, 4)/iteraciones;
-        padre.print("Recibida Latencia de " + procesarMensaje(mensaje, 2) + " de " + tiempo + " ms.\n");
-        //System.out.println("Latencia recibida: " + tiempo);
+        //padre.print("Recibida Latencia de " + procesarMensaje(mensaje, 2) + " de " + tiempo + " ms.\n");
+        System.out.println("Latencia recibida: " + tiempo);
         try{
         Locks.get(1).lock();
         Latencias.get(grupo).add(tiempo);
