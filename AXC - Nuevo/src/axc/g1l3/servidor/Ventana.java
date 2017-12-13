@@ -26,6 +26,7 @@ public class Ventana extends javax.swing.JFrame
      */
     public Ventana(int clientes, int tamanoGrupos, int iteraciones) throws FileNotFoundException
     {
+        this.setTitle("Servidor");
         initComponents();
         if(clientes%tamanoGrupos==0)
             TextSalas.setText(String.valueOf(clientes/tamanoGrupos));

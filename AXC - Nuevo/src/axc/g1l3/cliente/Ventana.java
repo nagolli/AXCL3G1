@@ -25,6 +25,7 @@ public class Ventana extends javax.swing.JFrame
      */
     public Ventana(String ip,int numCli)
     {
+        this.setTitle("Clientes");
         Ventana.numCli=numCli;
         System.out.println(numCli);
         initComponents();
@@ -39,8 +40,7 @@ public class Ventana extends javax.swing.JFrame
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents()
-    {
+    private void initComponents() {
 
         BotonAnadir = new javax.swing.JButton();
         BotonSalir = new javax.swing.JButton();
@@ -50,23 +50,20 @@ public class Ventana extends javax.swing.JFrame
         SpinnerHilo = new javax.swing.JSpinner();
         jLabel2 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
         BotonAnadir.setText("Lanzar");
-        BotonAnadir.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        BotonAnadir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BotonAnadirActionPerformed(evt);
             }
         });
 
         BotonSalir.setText("Salir");
-        BotonSalir.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        BotonSalir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BotonSalirActionPerformed(evt);
             }
         });
@@ -85,6 +82,8 @@ public class Ventana extends javax.swing.JFrame
         jTextField1.setEditable(false);
         jTextField1.setText(String.valueOf(numCli));
 
+        jLabel3.setText("Número de clientes");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -94,9 +93,10 @@ public class Ventana extends javax.swing.JFrame
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(BotonAnadir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(BotonSalir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(SpinnerHilo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
+                    .addComponent(SpinnerHilo, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel2)
-                    .addComponent(jTextField1))
+                    .addComponent(jTextField1)
+                    .addComponent(jLabel3))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1)
@@ -107,8 +107,10 @@ public class Ventana extends javax.swing.JFrame
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(9, 9, 9)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel3))
+                .addGap(9, 9, 9)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -118,7 +120,7 @@ public class Ventana extends javax.swing.JFrame
                         .addComponent(jLabel2)
                         .addGap(9, 9, 9)
                         .addComponent(SpinnerHilo, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 38, Short.MAX_VALUE)
                         .addComponent(BotonSalir, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
@@ -130,6 +132,7 @@ public class Ventana extends javax.swing.JFrame
     private void BotonAnadirActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_BotonAnadirActionPerformed
     {//GEN-HEADEREND:event_BotonAnadirActionPerformed
         clientes.lanzar(numCli);
+        BotonAnadir.setEnabled(false);
     }//GEN-LAST:event_BotonAnadirActionPerformed
 
     private void BotonSalirActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_BotonSalirActionPerformed
@@ -166,6 +169,7 @@ public class Ventana extends javax.swing.JFrame
     private javax.swing.JSpinner SpinnerHilo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextArea textAreaInfo;
